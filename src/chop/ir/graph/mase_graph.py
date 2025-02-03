@@ -359,7 +359,9 @@ class MaseGraph:
         cls,
         checkpoint: str,
         propagate_missing_metadata: bool = True,
+        safe_load: bool = True,
     ):
+        # print("Updated from_checkpoint method loaded with safe_load parameter.")
         """
         Load a MaseGraph from a checkpoint. A MaseGraph checkpoint consists of two files:
         {checkpoint}.pt and {checkpoint}.mz. {checkpoint}.pt contains the GraphModule,
@@ -377,7 +379,7 @@ class MaseGraph:
             MaseGraph: Loaded MaseGraph.
         """
         with open(f"{checkpoint}.pt", "rb") as f:
-            loaded_model = torch.load(f)
+            loaded_model = torch.load(f,weights_only=safe_load)
 
         assert isinstance(
             loaded_model, fx.GraphModule
