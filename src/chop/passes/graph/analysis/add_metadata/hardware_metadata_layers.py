@@ -61,11 +61,51 @@ INTERNAL_COMP = {
             ],
         },
     ],
+    "conv2d": [
+        {
+            # name: the name of most top module file for conv layer
+            # the layer that connects other submodules, which will be used in top.sv
+            # needs to match the same name as that module
+            "name": "convolution",
+            "dependence_files":[
+                "linear_layers/fixed_operators/rtl/fixed_dot_product.sv",
+                "linear_layers/fixed_operators/rtl/fixed_vector_mult.sv",
+                "linear_layers/fixed_operators/rtl/fixed_adder_tree.sv",
+                "linear_layers/fixed_operators/rtl/fixed_adder_tree_layer.sv",
+                "linear_layers/fixed_operators/rtl/fixed_accumulator.sv",
+                "linear_layers/fixed_operators/rtl/fixed_mult.sv",
+                "memory/rtl/input_buffer.sv",
+                "memory/rtl/unpacked_skid_buffer.sv",
+                "memory/rtl/skid_buffer.sv",
+                "memory/rtl/blk_mem_gen_0.sv",
+                "memory/rtl/unpacked_skid_buffer.sv",
+                "common/rtl/join2.sv",
+                "cast/rtl/floor_round.sv",
+                "cast/rtl/signed_clamp.sv",
+                "cast/rtl/fixed_signed_cast.sv",
+                "cast/rtl/fixed_cast.sv",
+                "cast/rtl/fixed_rounding.sv",
+                "convolution_layers/rtl/convolution_arith.sv",
+                "convolution_layers/rtl/convolution.sv",
+                "convolution_layers/rtl/padding.sv",
+                "convolution_layers/rtl/roller.sv",
+                "convolution_layers/rtl/sliding_window.sv",
+            ],
+        },
+    ],
     "relu": [
         {
             "name": "fixed_relu",
             "dependence_files": [
                 "activation_layers/rtl/fixed_relu.sv",
+            ],
+        },
+    ],
+    "leaky_relu": [
+        {
+            "name": "fixed_leakyrelu",
+            "dependence_files": [
+                "activation_layers/rtl/fixed_leakyrelu.sv",
             ],
         },
     ],

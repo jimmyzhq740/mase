@@ -29,6 +29,7 @@ def get_verilog_parameters(graph):
         for key, value in (
             node.meta["mase"].parameters["hardware"]["verilog_param"].items()
         ):
+            print ("key in get_verilog_parameter:", key)
             if "DATA_IN" in key or "DATA_OUT" in key:
                 parameter_map[key] = value
 

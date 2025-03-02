@@ -75,6 +75,11 @@ from .relu import (
     relu_ternary,
 )
 
+from .leaky_relu import(
+    leaky_relu_integer
+
+)
+
 from .selu import (
     selu_block_fp,
     selu_block_log,
@@ -207,6 +212,7 @@ quantized_func_map = {
     "relu_integer": relu_integer,
     "relu_fixed": relu_integer,
     "relu_log": relu_log,
+    "leaky_relu_fixed":leaky_relu_integer,
     "relu_minifloat_ieee": relu_minifloat_ieee,
     "relu_minifloat_denorm": relu_minifloat_denorm,
     "relu_block_fp": relu_block_fp,

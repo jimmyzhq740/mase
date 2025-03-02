@@ -38,6 +38,7 @@ def graph_iterator_for_mase_ops(graph):
             module_name = node.target
             module = graph.modules[module_name]
             mase_type = "module_related_func"
+            # print ('module:', module)
             if isinstance(module, nn.AdaptiveAvgPool1d):
                 mase_op = "adaptive_avg_pool1d"
             elif isinstance(module, nn.AdaptiveAvgPool2d):
@@ -75,7 +76,11 @@ def graph_iterator_for_mase_ops(graph):
             elif isinstance(module, nn.Linear):
                 mase_op = "linear"
             elif isinstance(module, nn.ReLU):
+                # print('caocaocao')
                 mase_op = "relu"
+            elif isinstance (module, nn.LeakyReLU):
+                # print('nihap')
+                mase_op = "leaky_relu"
             elif isinstance(module, nn.SELU):
                 mase_op = "selu"
             elif isinstance(module, nn.Tanh):
@@ -135,6 +140,9 @@ def graph_iterator_for_mase_ops(graph):
             node.meta["mase"].parameters["common"]["mase_op"] = mase_op
 
         elif node.op == "call_function":
+            print ("nihhhhhhhhh in graph_iterator_for_mase_ops in add_common_metadata")
+            # print (node)
+            # print (node.target.__name__)
             # we might have things like mult_1, add_2, so we need to match the pattern
             matching, matched_name = match_and_filter(
                 node.target.__name__,
@@ -143,6 +151,8 @@ def graph_iterator_for_mase_ops(graph):
                 + MASE_IMPLICIT_FUNCS
                 + graph.model.patched_op_names,
             )
+            # print (matched_name)
+            # print (matching)
             if not matching:
                 raise ValueError(
                     f"Unknown call_function node: {node.target} with name {node.name}"
@@ -213,14 +223,22 @@ def graph_iterator_for_metadata(
     """
 
     model, fx_graph, modules = graph.model, graph.fx_graph, graph.modules
+    # for node in fx_graph.nodes:
+    #     print ("node: ", node)
+    #     print ("node_op:", node.op)
+    #     print ("kkkkkkkkkkk: ",node.meta["mase"]["common"])
     env = {}
-
+    # print ("graph_iterator_for_metadata: ",model)
+    # print ("graph_iterator_for_metadata_modules: ",modules)
     # force everything to be on device="meta"
     if force_device_meta:
         dummy_in = {k: v.to("meta") for k, v in dummy_in.items()}
         model = model.to("meta")
 
     for node in fx_graph.nodes:
+        # print ("node: ", node)
+        # print ("node_op:", node.op)
+        # print ("Caooooo: ",node.meta["mase"]["common"])
         args, kwargs = None, None
         if node.op == "placeholder":
             result = dummy_in[node.name]
@@ -230,12 +248,18 @@ def graph_iterator_for_metadata(
             analyse_fn = analyse_common_parameters_attr
         elif node.op == "call_function":
             args = load_arg(node.args, env)
+            # print ("args: ", args)
             kwargs = load_arg(node.kwargs, env)
+            # print ("kwargs: ", kwargs)
             result = node.target(*args, **kwargs)
+            # print ("result: ",result)
+            # print (111111111)
+            # print ("node.meta_mase",node.meta["mase"])
+            # print ("node.meta_mase",node.meta["mase"]["common"])
             analyse_fn = analyse_common_parameters_function
         elif node.op == "call_method":
             self_obj, *args = load_arg(node.args, env)
-            print(self_obj)
+            # print(self_obj)
             kwargs = load_arg(node.kwargs, env)
             result = getattr(self_obj, node.target)(*args, **kwargs)
             analyse_fn = analyse_common_parameters_method
@@ -484,7 +508,7 @@ def add_common_metadata_analysis_pass(
         }
 
     """
-
+    print ('Hellos in add_common_metadata')
     if pass_args.get("dummy_in", None) is None and graph.is_huggingface:
         dummy_in = get_hf_dummy_in(graph.model)
         pass_args = {k: v for k, v in pass_args.items() if k != "dummy_in"}
@@ -494,9 +518,26 @@ def add_common_metadata_analysis_pass(
         raise ValueError(
             "dummy_in must be provided for add_common_metadata_analysis_pass."
         )
-
+    # for node in graph.fx_graph.nodes:
+    #     print ("node: ", node)
+    #     print ("node_op:", node.op)
+    #     print ("Sigoyi: ",node.meta["mase"]["common"])
+    print ('sigoyi in add_common_metadata')
     logger.debug(graph.fx_graph)
     graph = graph_iterator_for_mase_ops(graph)
+    # print ("graph_model: ",graph.model)
+    # for node in graph.fx_graph.nodes:
+    #     print ("node: ", node)
+    #     print ("node_op:", node.op)
+    #     print ("wocao: ",node.meta["mase"]["common"])
+    print ('wocao in add_common_metadata')
     graph = graph_iterator_for_metadata(graph, **pass_args)
+    # for node in graph.fx_graph.nodes:
+    #     print ("node: ", node)
+    #     print ("node_op:", node.op)
+    #     print ("Sigoyi: ",node.meta["mase"]["common"])
+    # print ("graph_iterator_for_metadata: ",graph.model)
+    print ('wobucao in add_common_metadata')
     graph = _add_graph_metadata(graph)
+    print ('nihappp in add_common_metadata')
     return graph, {}

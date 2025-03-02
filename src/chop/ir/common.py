@@ -68,6 +68,7 @@ MASE_MODULE_RELATED_FUNCS = [
     "linear",
     "max_pool1d",
     "max_pool2d",
+    "leaky_relu",
     "relu",
     "identity",
     "hardshrink",

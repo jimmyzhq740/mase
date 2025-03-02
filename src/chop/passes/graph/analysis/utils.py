@@ -122,9 +122,14 @@ def pattern_name_match(pattern, name):
 # names are likely to be func_name_[0-9]+
 def match_and_filter(name, funcs):
     matches = []
+    # print (name)
+    # print (funcs)
     for pattern in funcs:
+        # if pattern == "leaky_relu":
+        #     print ("Pattern: ",pattern)
         if (pattern == name) or (pattern in name):
             matches.append(pattern)
+    # print ("matches: ", matches)
     if len(matches) > 0:
         return True, max(matches, key=len)
     return False, None

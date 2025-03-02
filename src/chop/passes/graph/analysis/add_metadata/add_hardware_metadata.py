@@ -29,14 +29,16 @@ def _cap(name):
     return str(name).upper()
 
 
-def add_component_source(node):
+def  add_component_source(node):
     if node.meta["mase"]["hardware"]["is_implicit"]:
         return
 
     node.meta["mase"]["hardware"]["interface"] = {}
 
     mase_op = node.meta["mase"]["common"]["mase_op"]
+    print ('mase_op:', mase_op)
     if mase_op == "user_defined_module":
+        print ("1111")
         for custom_op, op_info in node.meta["mase"].model.custom_ops["modules"].items():
             if isinstance(
                 deepgetattr(node.meta["mase"].model, node.target),
@@ -48,6 +50,7 @@ def add_component_source(node):
                     "dependence_files"
                 ]
     elif mase_op in INTERNAL_COMP.keys():
+        print('2222')
         node.meta["mase"]["hardware"]["toolchain"] = "INTERNAL_RTL"
         # take the first ip in the component list by default
         node.meta["mase"]["hardware"]["module"] = INTERNAL_COMP[mase_op][0]["name"]
@@ -55,6 +58,7 @@ def add_component_source(node):
             "dependence_files"
         ]
     else:
+        print('333')
         node.meta["mase"]["hardware"]["toolchain"] = "INTERNAL_HLS"
         node.meta["mase"]["hardware"]["module"] = None
         node.meta["mase"]["hardware"]["dependence_files"] = []
@@ -76,6 +80,8 @@ def add_component_source(node):
             node.meta["mase"]["hardware"]["interface"][arg] = {}
 
 
+
+
 def add_verilog_param(node):
     if node.meta["mase"]["hardware"]["is_implicit"]:
         return
@@ -83,9 +89,17 @@ def add_verilog_param(node):
     node.meta["mase"]["hardware"]["verilog_param"] = {}
 
     args = node.meta["mase"]["common"]["args"]
+    # print ("args in add_verilog_param: ",args)
+    # print ("node: ", node)
+    # print (node.meta["mase"]["common"])
     results = node.meta["mase"]["common"]["results"]
     vp = node.meta["mase"]["hardware"]["verilog_param"]
+    print ('vp: ', vp)
     for arg, arg_info in args.items():
+        # print("arg: ",args)
+        print ("arg_info in add_verilog_param: ",arg_info)
+        print ("arg_info shape:", arg_info["shape"] )
+        print ("length of arg_info:", len(arg_info["shape"]))
         if isinstance(arg_info, dict):
             for i, precision in enumerate(arg_info["precision"]):
                 vp[_cap(arg + f"_precision_{i}")] = arg_info["precision"][i]

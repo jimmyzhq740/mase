@@ -17,6 +17,7 @@ torch.manual_seed(0)
 import cocotb
 from mase_cocotb.testbench import Testbench
 from mase_cocotb.interfaces.streaming import StreamDriver, StreamMonitor
+# from mase_cocotb.utils import  sign_extend, signed_to_unsigned
 
 
 import dill
@@ -53,6 +54,12 @@ async def test(dut):
 
     in_tensors = tb.generate_inputs(batches={batch_size})
     exp_out = tb.model(*list(in_tensors.values()))
+
+    print ("in_tensors: ", in_tensors)
+    print (tb.model)
+    print ("weight: ", tb.model.fc1.weight)
+    print ("Bias: ", tb.model.fc1.bias)
+    print ("exp_out: ", exp_out)
 
     tb.load_drivers(in_tensors)
     tb.load_monitors(exp_out)
@@ -118,6 +125,7 @@ def _emit_cocotb_tb(graph):
             :return: a dictionary of input arguments and their corresponding tensors
             :rtype: Dict
             """
+            print ('nihap in generate_inputs')
             # ! TO DO: iterate through graph.args instead to generalize
             inputs = {}
             for node in graph.nodes_in:
@@ -128,6 +136,23 @@ def _emit_cocotb_tb(graph):
                     # print(f"Generating data for node {node}, arg {arg}: {arg_info}")
                     inputs[f"{arg}"] = torch.rand(([batches] + arg_info["shape"][1:]))
             return inputs
+
+        # def model(self, inputs):
+        #     print ('nihap form model??')
+        #     if self.SIGNED:
+        #         inputs = [[sign_extend(x, self.DATA_WIDTH) for x in l] for l in inputs]
+
+        #     exp_out = []
+        #     for l in inputs:
+        #         if self.MAX1_MIN0:
+        #             exp_out.append(max(l))
+        #         else:
+        #             exp_out.append(min(l))
+
+        #     if self.SIGNED:
+        #         exp_out = [signed_to_unsigned(x, self.DATA_WIDTH) for x in exp_out]
+
+        #     return exp_out
 
         def load_drivers(self, in_tensors):
             for arg, arg_batches in in_tensors.items():

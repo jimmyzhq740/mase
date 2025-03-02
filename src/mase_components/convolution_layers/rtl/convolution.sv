@@ -1,12 +1,45 @@
 `timescale 1ns / 1ps
 module convolution #(
-    // 
-    parameter DATA_IN_0_PRECISION_0 = 16,
-    parameter DATA_IN_0_PRECISION_1 = 3,
-    parameter WEIGHT_PRECISION_0    = 8,
-    parameter WEIGHT_PRECISION_1    = 4,
-    parameter BIAS_PRECISION_0      = 8,
-    parameter BIAS_PRECISION_1      = 4,
+    //
+    parameter DATA_IN_0_PRECISION_0        = 16,
+    parameter DATA_IN_0_PRECISION_1        = 3,
+    parameter WEIGHT_PRECISION_0           = 8,
+    parameter WEIGHT_PRECISION_1           = 4,
+    parameter BIAS_PRECISION_0             = 8,
+    parameter BIAS_PRECISION_1             = 4,
+    parameter DATA_IN_0_TENSOR_SIZE_DIM_0  = 4,
+    parameter DATA_IN_0_TENSOR_SIZE_DIM_1  = 4,
+    parameter DATA_IN_0_PARALLELISM_DIM_0  = 4,
+    parameter DATA_IN_0_PARALLELISM_DIM_1  = 4,
+    parameter DATA_IN_0_TENSOR_SIZE_DIM_2  = 4,
+    parameter DATA_IN_0_PARALLELISM_DIM_2  = 4,
+    parameter DATA_IN_0_TENSOR_SIZE_DIM_3  = 4,
+    parameter DATA_IN_0_PARALLELISM_DIM_3  = 4,
+    parameter WEIGHT_TENSOR_SIZE_DIM_0     = 4,
+    parameter WEIGHT_PARALLELISM_DIM_0     = 4,
+    parameter WEIGHT_TENSOR_SIZE_DIM_1     = 4,
+    parameter WEIGHT_PARALLELISM_DIM_1     = 4,
+    parameter WEIGHT_TENSOR_SIZE_DIM_2     = 4,
+    parameter WEIGHT_PARALLELISM_DIM_2     = 4,
+    parameter WEIGHT_TENSOR_SIZE_DIM_3     = 4,
+    parameter WEIGHT_PARALLELISM_DIM_3     = 4,
+    parameter BIAS_TENSOR_SIZE_DIM_0       = 4,
+    parameter BIAS_PARALLELISM_DIM_0       = 4,
+    parameter BIAS_TENSOR_SIZE_DIM_1       = 4,
+    parameter BIAS_PARALLELISM_DIM_1       = 4,
+    parameter DATA_OUT_0_TENSOR_SIZE_DIM_0 = 4,
+    parameter DATA_OUT_0_PARALLELISM_DIM_0 = 4,
+    parameter DATA_OUT_0_TENSOR_SIZE_DIM_1 = 4,
+    parameter DATA_OUT_0_PARALLELISM_DIM_1 = 4,
+    parameter DATA_OUT_0_TENSOR_SIZE_DIM_2 = 4,
+    parameter DATA_OUT_0_PARALLELISM_DIM_2 = 4,
+    parameter DATA_OUT_0_TENSOR_SIZE_DIM_3 = 4,
+    parameter DATA_OUT_0_PARALLELISM_DIM_3 = 4,
+
+
+
+
+
 
     parameter IN_X    = 3,
     parameter IN_Y   = 2,

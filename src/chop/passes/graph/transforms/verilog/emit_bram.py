@@ -27,6 +27,12 @@ def _cap(name):
     """
     return str(name).upper()
 
+# def add_verilog_parameter (node):
+#     args = node.meta["mase"]["common"]["args"]
+#     for arg, arg_info in args.items():
+#         # dimension of the tensor is defined by len(arg_info["shape"])
+#         for dim in range(0, len(arg_info["shape"])):
+
 
 def emit_parameters_in_mem_internal(node, param_name, file_name, data_name):
     """
@@ -49,6 +55,7 @@ def emit_parameters_in_mem_internal(node, param_name, file_name, data_name):
             f"{_cap(verilog_param_name)}_PARALLELISM_DIM_1"
         ]
     )
+    print ("out_size in emit_parameters_in_mem_internal:",out_size)
     out_depth = int((total_size + out_size - 1) / out_size)
     out_width = int(
         node.meta["mase"].parameters["common"]["args"][verilog_param_name]["precision"][
@@ -121,11 +128,18 @@ endmodule
 module {node_param_name}_source #(
     parameter {_cap(verilog_param_name)}_TENSOR_SIZE_DIM_0  = 32,
     parameter {_cap(verilog_param_name)}_TENSOR_SIZE_DIM_1  = 1,
+    parameter {_cap(verilog_param_name)}_TENSOR_SIZE_DIM_2  = 32,
+    parameter {_cap(verilog_param_name)}_TENSOR_SIZE_DIM_3  = 1,
     parameter {_cap(verilog_param_name)}_PRECISION_0 = 16,
     parameter {_cap(verilog_param_name)}_PRECISION_1 = 3,
+    parameter {_cap(verilog_param_name)}_PRECISION_2 = 16,
+    parameter {_cap(verilog_param_name)}_PRECISION_3 = 3,
 
     parameter {_cap(verilog_param_name)}_PARALLELISM_DIM_0 = 1,
     parameter {_cap(verilog_param_name)}_PARALLELISM_DIM_1 = 1,
+    parameter {_cap(verilog_param_name)}_PARALLELISM_DIM_2 = 1,
+    parameter {_cap(verilog_param_name)}_PARALLELISM_DIM_3 = 1,
+
     parameter OUT_DEPTH = (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_0 + {_cap(verilog_param_name)}_PARALLELISM_DIM_0 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_0) * (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_1 + {_cap(verilog_param_name)}_PARALLELISM_DIM_1 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_1)
 ) (
     input clk,
@@ -190,6 +204,7 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
     """
     Emit initialised data for the ROM block. Each element must be in 8 HEX digits.
     """
+    print (node)
     verilog_param_name = param_name.replace(".", "_")
     total_size = math.prod(
         node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"]
@@ -209,6 +224,7 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
 
     data_buff = ""
     param_data = node.meta["mase"].module.get_parameter(param_name).data
+    print ("param_data in emit_parameters_in_dat_internal: ", param_data)
     if node.meta["mase"].parameters["hardware"]["interface"][verilog_param_name][
         "transpose"
     ]:
@@ -247,6 +263,7 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
 
         scale = 2**frac_width
         thresh = 2**width
+        print ("out_depth: ",out_depth)
         for i in range(0, out_depth):
             line_buff = ""
             for j in range(0, out_size):
@@ -269,7 +286,7 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
             data_buff += line_buff + "\n"
     else:
         assert False, "Emitting non-fixed parameters is not supported."
-
+    print ('data_buff: ', data_buff)
     with open(file_name, "w", encoding="utf-8") as outf:
         outf.write(data_buff)
     logger.debug(f"Init data {param_name} successfully written into {file_name}")
@@ -345,8 +362,11 @@ def emit_bram_handshake(node, rtl_dir):
     Enumerate input parameters of the internal node and emit a ROM block
     with handshake interface for each parameter
     """
+    print (rtl_dir)
     node_name = vf(node.name)
     for param_name, parameter in node.meta["mase"].module.named_parameters():
+        print ("param_name in emit_bram_handshake:",param_name)
+        print ("parameter in emit_bram_handshake:", parameter)
         param_verilog_name = param_name.replace(".", "_")
         if (
             node.meta["mase"].parameters["hardware"]["interface"][param_verilog_name][
@@ -518,8 +538,13 @@ def emit_bram_transform_pass(graph, pass_args={}):
         if node.meta["mase"].module is None:
             continue
         if "INTERNAL" in node.meta["mase"].parameters["hardware"]["toolchain"]:
+            # for param_name, parameter in node.meta["mase"].module.named_parameters():
+            #     print ("param_name in emit_bram_transform_pass:",param_name)
+            #     print ("parameter in emit_bram_transform_pass:", parameter)
+            print ('1 in emit_bram_transform_pass')
             emit_bram_handshake(node, rtl_dir)
         elif "MLIR_HLS" in node.meta["mase"].parameters["hardware"]["toolchain"]:
+            print ('2 in emit_bram_transform_pass')
             emit_bram_hls(node, rtl_dir)
 
     return graph, None

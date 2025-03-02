@@ -104,13 +104,16 @@ class VerilogParameterEmitter:
         nodes_out = graph.nodes_out
         node_in_name = vf(nodes_in[0].name)
         node_out_name = vf(nodes_out[0].name)
-
+        print ("nodes_in:", nodes_in)
+        print ("nodes_out:", nodes_out)
         parameters = ""
 
         # Write node parameters
         for key, value in parameter_map.items():
             parameters += f"""    parameter {key} = {value},\n"""
 
+
+        print ("parameter in VerilogParameterEmitter:", parameters)
         return _remove_last_comma(parameters)
 
 
@@ -364,7 +367,7 @@ class VerilogInternalComponentEmitter:
     .data_in_0       ({node_name}_data_in_0),
     .data_in_0_valid ({node_name}_data_in_0_valid),
     .data_in_0_ready ({node_name}_data_in_0_ready),
-    
+
     .data_out_0       ({node_name}_data_out_0),
     .data_out_0_valid ({node_name}_data_out_0_valid),
     .data_out_0_ready ({node_name}_data_out_0_ready),
@@ -691,6 +694,7 @@ class VerilogEmitter:
         self.graph = graph
 
         self.parameter_map = get_verilog_parameters(graph)
+        print ("Parameter_map in VerilogEmitter:", self.parameter_map)
 
     def emit(self, graph, top_name):
         parameters_to_emit = VerilogParameterEmitter(graph).emit(

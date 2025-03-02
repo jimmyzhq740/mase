@@ -19,7 +19,12 @@ def init_metadata_analysis_pass(graph, pass_args=None):
     """
     for node in graph.fx_graph.nodes:
         node.meta["mase"] = MaseMetadata(node=node, model=graph.model)
+        # print (node)
+        # print ("In Initial: ", node.meta["mase"]["common"])
 
     # Graph metadata
     graph.meta = {"mase": MaseGraphMetadata(graph)}
+    # for node in graph.fx_graph.nodes:
+        # print (node.meta["mase"]["common"])
+
     return graph, {}

@@ -28,10 +28,17 @@ func_data = {
         "is_causal": "config",
         "scale": "config",
     },
+    # https://pytorch.org/docs/stable/generated/torch.nn.LeakyReLU.html#torch.nn.LeakyReLU
+    "leaky_relu": {
+    "input": "data_in",
+    "negative_slope": "config",
+    "inplace": "config"},
     # https://pytorch.org/docs/stable/generated/torch.flatten.html#torch.flatten
     "flatten": {"input": "data_in", "start_dim": "config", "end_dim": "config"},
+    # In ReLU add a negative_slope if using leaky_ReLU
     # https://pytorch.org/docs/stable/generated/torch.nn.functional.relu.html
-    "relu": {"input": "data_in", "inplace": "config"},
+    # "relu": {"input": "data_in",  "negative_slope": "config","inplace": "config"},
+    "relu": {"input": "data_in","inplace": "config"},
     # https://pytorch.org/docs/stable/generated/torch.nn.functional.hardshrink.html
     "hardshrink": {"input": "data_in", "lambd": "config"},
     # https://pytorch.org/docs/stable/generated/torch.nn.functional.sigmoid.html
@@ -589,8 +596,17 @@ def _annotate_arg_metadata(
                 meta["common"]["args"][arg_name]["value"] = args[i]
 
     # * Handle kwargs
+    # print ("kwargs: ", kwargs)
+
     for k, v in kwargs.items():
+        # print (k,v)
+        # print ('nihap')
+        # print ("func_data: ", func_data)
+        # print ('hello')
+        # print (type(k))
+        # print (func_data[k])
         if func_data[k] == "data_in":
+            # print (k,v)
             # rename this to mase data_in_number
             shape = get_shape(v)
             arg_meta = {
@@ -603,6 +619,20 @@ def _annotate_arg_metadata(
                 arg_meta["value"] = v
             meta["common"]["args"][f"data_in_{data_in_itr}"] = arg_meta
             data_in_itr += 1
+        elif k == "negative_slope":
+
+            # although inplace is marked as a config type, it is in fact just a boolean flag
+            # print (meta["common"]["args"])
+            # print ("我勒个去")
+            meta["common"]["args"][k] =v
+            # {
+            #     "value":v,
+            #     "type": type(v),
+            #     "precision": arg_precision,
+            #     "shape": get_shape(v),
+            # }
+            print (meta["common"]["args"][k])
+
         elif k == "inplace":
             # although inplace is marked as a config type, it is in fact just a boolean flag
             meta["common"]["args"][k] = v
@@ -713,12 +743,19 @@ def analyse_common_parameters_placeholder(meta, result, args, kwargs, add_value=
 
 def analyse_common_parameters_function(meta, result, args, kwargs, add_value=True):
     # fetch mase info
+    # print ("meta_common: ",meta["common"])
+    # print (meta)
+    # print (meta["common"])
     mase_op = meta["common"]["mase_op"]
+    # print ("你好")
+    # print ("mase_op: ",mase_op)
 
     # deal with result
     meta = _annotate_result_metadata(meta, result, add_value)
     # deal with args and kwargs
     meta = _annotate_arg_metadata(meta, args, kwargs, func_data[mase_op], add_value)
+    # print ("你好")
+    # print ("func_data[mase_op]: ",func_data[mase_op])
 
     return meta
 

@@ -28,6 +28,7 @@ QUANTIZEABLE_OP = (
     "mul",
     "linear",
     "relu",
+    "leaky_relu",
     "sub",
     "batch_norm2d",
     "layer_norm",
@@ -69,8 +70,10 @@ def graph_iterator_quantize_by_type(graph, config: dict):
             )
             continue
         if get_mase_op(node) not in QUANTIZEABLE_OP:
+            print (get_mase_op(node))
             continue
         node_config = get_config(config, get_mase_op(node))
+        print ("node_config: ", node_config)
         if node_config["name"] is None:
             continue
         node_config = parse_node_config(node_config, get_mase_op(node))

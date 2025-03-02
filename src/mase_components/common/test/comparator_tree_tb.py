@@ -39,6 +39,7 @@ class ComparatorTreeTB(Testbench):
         ]
 
     def model(self, inputs):
+        print ('nihap form model??')
         if self.SIGNED:
             inputs = [[sign_extend(x, self.DATA_WIDTH) for x in l] for l in inputs]
 

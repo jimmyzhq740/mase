@@ -161,6 +161,8 @@ quantized_module_map = {
     "conv1d_minifloat_ieee": Conv1dMinifloatIEEE,
     "conv1d_minifloat_denorm": Conv1dMinifloatDenorm,
     "conv1d_block_fp": Conv1dBlockFP,
+    # Added:
+    "conv2d_fixed": Conv2dInteger,
     "conv2d_block_minifloat": Conv2dBlockMinifloat,
     "conv2d_integer": Conv2dInteger,
     "conv2d_binary_residual": Conv2dBinaryResidualSign,
