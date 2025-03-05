@@ -8,7 +8,7 @@ module convolution_arith #(
     parameter BIAS_PRECISION_0 = 8,
     parameter BIAS_PRECISION_1 = 4,
     parameter ROLL_IN_NUM = 4,
-    parameter ROLL_OUT_NUM = 2,
+    parameter ROLL_OUT_NUM = 4,
     parameter IN_CHANNELS_DEPTH = 4,
     parameter OUT_CHANNELS_PARALLELISM = 2,
     parameter OUT_CHANNELS_DEPTH = 2,
@@ -26,7 +26,7 @@ module convolution_arith #(
     input                                      data_in_0_valid,
     output logic                               data_in_0_ready,
 
-    input [WEIGHT_PRECISION_0 - 1:0] weight[OUT_CHANNELS_PARALLELISM * ROLL_OUT_NUM - 1 : 0],
+    input [WEIGHT_PRECISION_0 - 1:0] weight[ROLL_OUT_NUM*OUT_CHANNELS_PARALLELISM - 1 : 0],
     input weight_valid,
     output logic weight_ready,
 
@@ -116,7 +116,7 @@ module simple_convolution_arith #(
     parameter BIAS_PRECISION_0 = 8,
     parameter BIAS_PRECISION_1 = 4,
     parameter ROLL_IN_NUM = 4,
-    parameter ROLL_OUT_NUM = 2,
+    parameter ROLL_OUT_NUM = 4,
     parameter IN_CHANNELS_DEPTH = 4,
     parameter OUT_CHANNELS_PARALLELISM = 2,
     parameter HAS_BIAS,

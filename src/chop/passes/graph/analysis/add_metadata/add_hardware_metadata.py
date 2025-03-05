@@ -97,9 +97,9 @@ def add_verilog_param(node):
     print ('vp: ', vp)
     for arg, arg_info in args.items():
         # print("arg: ",args)
-        print ("arg_info in add_verilog_param: ",arg_info)
-        print ("arg_info shape:", arg_info["shape"] )
-        print ("length of arg_info:", len(arg_info["shape"]))
+        # print ("arg_info in add_verilog_param: ",arg_info)
+        # print ("arg_info shape:", arg_info["shape"] )
+        # print ("length of arg_info:", len(arg_info["shape"]))
         if isinstance(arg_info, dict):
             for i, precision in enumerate(arg_info["precision"]):
                 vp[_cap(arg + f"_precision_{i}")] = arg_info["precision"][i]
@@ -123,12 +123,27 @@ def add_verilog_param(node):
                     vp[_cap(arg + f"_parallelism_dim_{dim}")] = arg_info["shape"][::-1][
                         dim
                     ]
+            print ("arg in add_verilog_param:", arg)
+        #To generate stride and padding parameter for sv file:
+        elif type(arg_info) == tuple:
+            for dim in range (0, len(arg_info)):
+                vp[_cap(arg + f"_tensor_size_dim_{dim}_value")]= (
+                    arg_info[len(arg_info) - 1 - dim]
+                    if dim < len(arg_info)
+                    else 1
+                )
+
         elif type(arg_info) == bool:
             vp[_cap(arg)] = 1 if arg_info else 0
         else:
+            print (arg)
+            print (arg_info)
             vp[_cap(arg)] = arg_info
+        print ('vp after for: ', vp)
 
     for result, result_info in results.items():
+        print ("result in add_verilog_param:", result)
+        print ("result_info in add_verilog_param:", result_info)
         if isinstance(result_info, dict):
             for i, precision in enumerate(result_info["precision"]):
                 vp[_cap(result + f"_precision_{i}")] = result_info["precision"][i]

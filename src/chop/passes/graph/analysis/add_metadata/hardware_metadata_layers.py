@@ -86,7 +86,7 @@ INTERNAL_COMP = {
                 "cast/rtl/fixed_cast.sv",
                 "cast/rtl/fixed_rounding.sv",
                 "convolution_layers/rtl/convolution_arith.sv",
-                "convolution_layers/rtl/convolution.sv",
+                "convolution_layers/rtl/convolution_mase.sv",
                 "convolution_layers/rtl/padding.sv",
                 "convolution_layers/rtl/roller.sv",
                 "convolution_layers/rtl/sliding_window.sv",

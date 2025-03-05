@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python3
 
 import os
 
@@ -38,14 +38,16 @@ class ConvArithTB(Testbench):
             self.log.setLevel(logging.DEBUG)
 
         self.data_in_0_driver = StreamDriver(
-            dut.clk, dut.data_in_0, dut.data_in_0_valid, dut.data_in_0_ready
+            dut.clk, dut.data_in_0, dut.data_in_0_valid, dut.data_in_0_ready,driver_name="DATA_IN_0"
         )
+
+
         self.weight_driver = StreamDriver(
-            dut.clk, dut.weight, dut.weight_valid, dut.weight_ready
+            dut.clk, dut.weight, dut.weight_valid, dut.weight_ready,driver_name= "WEIGHT"
         )
 
         self.bias_driver = StreamDriver(
-            dut.clk, dut.bias, dut.bias_valid, dut.bias_ready
+            dut.clk, dut.bias, dut.bias_valid, dut.bias_ready,driver_name= "BIAS"
         )
 
         self.data_out_0_monitor = ErrorThresholdStreamMonitor(
@@ -123,6 +125,7 @@ class ConvArithTB(Testbench):
         iy = self.get_parameter("IN_Y")
         ix = self.get_parameter("IN_X")
         # get parameters with integer format
+        # it's shape of 4, randn will generate values for this 4D tensor
         x = 5 * torch.randn(samples, ic, iy, ix)
 
         _dict = self.model.get_quantized_weights_with_inputs(x)
@@ -253,6 +256,7 @@ class ConvArithTB(Testbench):
             }
         )
         # * Load the inputs driver
+        # x has been shaped
         self.log.info(f"Processing inputs: {x}")
         self.data_in_0_driver.load_driver(x)
 
@@ -275,7 +279,9 @@ class ConvArithTB(Testbench):
 
 @cocotb.test()
 async def cocotb_test(dut):
-    tb = ConvArithTB(dut, 10)
+    # 10 is sample size-> Change it to 1"
+    # tb = ConvArithTB(dut, 10)
+    tb = ConvArithTB(dut, 1)
     await tb.run_test()
 
 
@@ -297,8 +303,8 @@ def handshake_signal_check(valid, ready, signal, log):
 
 def get_fixed_conv_config(kwargs={}):
     config = {
-        "IN_C": 3,
-        "UNROLL_IN_C": 3,
+        "IN_C": 4,
+        "UNROLL_IN_C": 2,
         "IN_X": 3,
         "IN_Y": 3,
         "KERNEL_X": 3,

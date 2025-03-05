@@ -39,7 +39,7 @@ class Monitor:
             await RisingEdge(self.clk)
             if self._trigger():
                 tr = self._recv()
-                self.log.debug(f"Observed output beat {tr}")
+                self.log.debug(f"Observed output beat hiiiiiii {tr}")
                 self.recv_queue.put(tr)
 
                 if self.exp_queue.empty():

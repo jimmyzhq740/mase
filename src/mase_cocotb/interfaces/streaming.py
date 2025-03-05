@@ -23,7 +23,9 @@ class StreamDriver(Driver):
         data,
         valid,
         ready,
+        driver_name="StreamDriver",
         record_num_beats=False,
+
     ) -> None:
         super().__init__()
         self.clk = clk
@@ -33,6 +35,8 @@ class StreamDriver(Driver):
         self.valid_prob = 1.0
         self.record_num_beats = record_num_beats
         self.num_beats = 0 if record_num_beats else None
+
+        self.driver_name = driver_name
 
     def set_valid_prob(self, prob):
         assert prob >= 0.0 and prob <= 1.0
@@ -57,9 +61,9 @@ class StreamDriver(Driver):
                 if type(self.data) == tuple:
                     # Drive multiple data bus
                     for t in transaction:
-                        self.log.debug("Sent %s" % t)
+                        self.log.debug("Sentnihap %s" % t)
                 else:
-                    self.log.debug("Sent %s" % transaction)
+                    self.log.debug("Sent from streamping.py %s %s" %(self.driver_name, transaction))
                 if self.record_num_beats:
                     self.num_beats += 1
                 break

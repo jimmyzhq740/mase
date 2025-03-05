@@ -145,7 +145,7 @@ module {node_param_name}_source #(
     input clk,
     input rst,
 
-    output logic [{_cap(verilog_param_name)}_PRECISION_0-1:0] data_out      [{_cap(verilog_param_name)}_PARALLELISM_DIM_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_1-1:0],
+    output logic [{_cap(verilog_param_name)}_PRECISION_0-1:0] data_out      [{_cap(verilog_param_name)}_PARALLELISM_DIM_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_1*{_cap(verilog_param_name)}_PARALLELISM_DIM_2*{_cap(verilog_param_name)}_PARALLELISM_DIM_3-1:0],
     output                       data_out_valid,
     input                        data_out_ready
 );

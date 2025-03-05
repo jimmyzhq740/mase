@@ -15,9 +15,13 @@ def get_verilog_parameters(graph):
         for key, value in (
             node.meta["mase"].parameters["hardware"]["verilog_param"].items()
         ):
+            # print ("key in get_verilog_parameters:", key)
+            # print ("value in get_verilog_parameters:", value)
             if value is None:
                 continue
-            if not isinstance(value, (int, float, complex, bool)):
+            # if value is tuple:
+
+            if not isinstance(value, (int, float, complex, bool,tuple)):
                 value = '"' + value + '"'
             assert (
                 f"{node_name}_{key}" not in parameter_map.keys()
@@ -29,7 +33,7 @@ def get_verilog_parameters(graph):
         for key, value in (
             node.meta["mase"].parameters["hardware"]["verilog_param"].items()
         ):
-            print ("key in get_verilog_parameter:", key)
+            # print ("key in get_verilog_parameter:", key)
             if "DATA_IN" in key or "DATA_OUT" in key:
                 parameter_map[key] = value
 

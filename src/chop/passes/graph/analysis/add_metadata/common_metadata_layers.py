@@ -548,7 +548,8 @@ def _annotate_arg_metadata(
 
     # * Handle args
     for i, x in enumerate(args):
-
+        # print ("i:",i)
+        # print ("x:", x)
         # Input data tensor
         if isinstance(x, torch.Tensor) and ordered_func_data[i][1] == "data_in":
             arg_meta = {
@@ -594,9 +595,9 @@ def _annotate_arg_metadata(
 
             if add_value:
                 meta["common"]["args"][arg_name]["value"] = args[i]
-
+            # print (meta["common"]["args"])
     # * Handle kwargs
-    # print ("kwargs: ", kwargs)
+    print ("kwargs: ", kwargs)
 
     for k, v in kwargs.items():
         # print (k,v)
@@ -620,7 +621,6 @@ def _annotate_arg_metadata(
             meta["common"]["args"][f"data_in_{data_in_itr}"] = arg_meta
             data_in_itr += 1
         elif k == "negative_slope":
-
             # although inplace is marked as a config type, it is in fact just a boolean flag
             # print (meta["common"]["args"])
             # print ("我勒个去")
@@ -766,6 +766,9 @@ def analyse_common_parameters_function(meta, result, args, kwargs, add_value=Tru
 
 
 def analyse_common_parameters_module(meta, result, args, kwargs, add_value=True):
+    print ('HIIII from analyse_common_parameters_module')
+    print ("args from analyse_common_parameters_module", args)
+    print ("kwargs from analyse_common_parameters_module", kwargs)
     mase_op = meta["common"]["mase_op"]
     node_module = deepgetattr(meta.model, meta.node.target)
 
@@ -776,13 +779,17 @@ def analyse_common_parameters_module(meta, result, args, kwargs, add_value=True)
                 break
     else:
         module_args = module_data[mase_op]
-
+    print ("meta before _annotate_arg_metadata:", meta["common"])
     meta = _annotate_arg_metadata(meta, args, kwargs, module_args, add_value)
+    print ("meta after _annotate_arg_metadata:", meta["common"])
 
     arg_type, arg_precision = get_type_and_precision(meta)
+    print ("meta after get_type_and_precision:", meta["common"])
+
 
     for name, parameter in meta.module.named_parameters():
         name = name.replace(".", "_")
+        print (name)
         meta["common"]["args"][name] = {
             "type": arg_type,
             "precision": arg_precision,
@@ -795,7 +802,14 @@ def analyse_common_parameters_module(meta, result, args, kwargs, add_value=True)
         }
         if add_value:
             meta["common"]["args"][name]["value"] = parameter
+    if hasattr (meta.module,"stride"):
+        print ("stride",meta.module.stride)
+        meta["common"]["args"]["stride"]=(meta.module.stride)
 
+    if hasattr (meta.module,"padding"):
+        print ("Padding",meta.module.padding)
+        meta["common"]["args"]["padding"]=(meta.module.padding)
+    print ("meta after for:", meta["common"])
     meta = _annotate_result_metadata(meta, result, add_value)
     return meta
 

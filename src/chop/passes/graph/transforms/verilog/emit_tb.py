@@ -57,8 +57,8 @@ async def test(dut):
 
     print ("in_tensors: ", in_tensors)
     print (tb.model)
-    print ("weight: ", tb.model.fc1.weight)
-    print ("Bias: ", tb.model.fc1.bias)
+    # print ("weight: ", tb.model.fc1.weight)
+    # print ("Bias: ", tb.model.fc1.bias)
     print ("exp_out: ", exp_out)
 
     tb.load_drivers(in_tensors)
@@ -134,7 +134,11 @@ def _emit_cocotb_tb(graph):
                     if "data_in" not in arg:
                         continue
                     # print(f"Generating data for node {node}, arg {arg}: {arg_info}")
+                # e.g. [10, 3, 224, 224]: arg_info["shape"][1:] means everything
+                # [batches] + arg_info["shape"][1:] means you take the single-element list [batches]
+                # (for example, [32]) and then append [3, 224, 224] to get [32, 3, 224, 224].
                     inputs[f"{arg}"] = torch.rand(([batches] + arg_info["shape"][1:]))
+                    print ("inputs in generate_inputs:", inputs)
             return inputs
 
         # def model(self, inputs):
@@ -155,7 +159,10 @@ def _emit_cocotb_tb(graph):
         #     return exp_out
 
         def load_drivers(self, in_tensors):
+            print ("load_drivers in emit_tb.py")
             for arg, arg_batches in in_tensors.items():
+                print ("arg in load_drivers in emit_tb: ",arg)
+                print ("arg_batch in load_drivers in emit_tb: ",arg_batches)
                 # Quantize input tensor according to precision
                 if len(self.input_precision) > 1:
                     from mase_cocotb.utils import fixed_preprocess_tensor
@@ -183,10 +190,12 @@ def _emit_cocotb_tb(graph):
                 block_size = self.get_parameter(
                     "DATA_IN_0_PARALLELISM_DIM_0"
                 ) * self.get_parameter("DATA_IN_0_PARALLELISM_DIM_1")
+                print ("in_data_blocks:", in_data_blocks)
                 for block in in_data_blocks:
                     if len(block) < block_size:
                         block = block + [0] * (block_size - len(block))
                     self.input_drivers[arg].append(block)
+                    print ("self.input_drivers in load_drivers:",self.input_drivers)
 
         def load_monitors(self, expectation):
             from mase_cocotb.utils import fixed_preprocess_tensor

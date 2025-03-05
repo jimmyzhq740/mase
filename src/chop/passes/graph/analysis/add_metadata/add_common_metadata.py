@@ -228,7 +228,7 @@ def graph_iterator_for_metadata(
     #     print ("node_op:", node.op)
     #     print ("kkkkkkkkkkk: ",node.meta["mase"]["common"])
     env = {}
-    # print ("graph_iterator_for_metadata: ",model)
+    print ("graph_iterator_for_metadata: ",model)
     # print ("graph_iterator_for_metadata_modules: ",modules)
     # force everything to be on device="meta"
     if force_device_meta:
@@ -265,7 +265,9 @@ def graph_iterator_for_metadata(
             analyse_fn = analyse_common_parameters_method
         elif node.op == "call_module":
             args = load_arg(node.args, env)
+            print ("args in call_module: ", args)
             kwargs = load_arg(node.kwargs, env)
+            print ("kwargs in call_module: ", kwargs)
             result = modules[node.target](*args, **kwargs)
             analyse_fn = analyse_common_parameters_module
         elif node.op == "output":
@@ -525,13 +527,15 @@ def add_common_metadata_analysis_pass(
     print ('sigoyi in add_common_metadata')
     logger.debug(graph.fx_graph)
     graph = graph_iterator_for_mase_ops(graph)
-    # print ("graph_model: ",graph.model)
+
+    print ("graph_model: ",graph.model)
     # for node in graph.fx_graph.nodes:
     #     print ("node: ", node)
     #     print ("node_op:", node.op)
     #     print ("wocao: ",node.meta["mase"]["common"])
     print ('wocao in add_common_metadata')
     graph = graph_iterator_for_metadata(graph, **pass_args)
+
     # for node in graph.fx_graph.nodes:
     #     print ("node: ", node)
     #     print ("node_op:", node.op)
