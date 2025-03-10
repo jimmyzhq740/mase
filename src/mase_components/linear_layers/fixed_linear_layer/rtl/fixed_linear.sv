@@ -5,7 +5,7 @@
  * The fixed_linear module implements torch.nn.functional.linear, which
  * computes Y = X @ W^T + b
  *
- * Weight tensor is assumed to have shape (out_features, in_features)
+ * Weight tensor is assumed to have shape (out_features, in_features)// so if parallelism is 2, then the weight tensor is
  * Data tensor is assumed to have shape (batch_size, in_features)
  * Bias tensor is assumed to have shape (out_features)
  *
@@ -138,15 +138,15 @@ module fixed_linear #(
   end
   matmul #(
       // Total dimensions
-      .A_TOTAL_DIM0(DATA_IN_0_TENSOR_SIZE_DIM_0),
-      .A_TOTAL_DIM1(DATA_IN_0_TENSOR_SIZE_DIM_1),
-      .B_TOTAL_DIM0(REAL_WEIGHT_TENSOR_SIZE_DIM_0),
+      .A_TOTAL_DIM0(DATA_IN_0_TENSOR_SIZE_DIM_0),    //4
+      .A_TOTAL_DIM1(DATA_IN_0_TENSOR_SIZE_DIM_1),    //1
+      .B_TOTAL_DIM0(REAL_WEIGHT_TENSOR_SIZE_DIM_0),  //
       .B_TOTAL_DIM1(REAL_WEIGHT_TENSOR_SIZE_DIM_1),
 
-      .A_COMPUTE_DIM0(DATA_IN_0_PARALLELISM_DIM_0),
-      .A_COMPUTE_DIM1(DATA_IN_0_PARALLELISM_DIM_1),
-      .B_COMPUTE_DIM0(REAL_WEIGHT_PARALLELISM_DIM_0),
-      .B_COMPUTE_DIM1(REAL_WEIGHT_PARALLELISM_DIM_1),
+      .A_COMPUTE_DIM0(DATA_IN_0_PARALLELISM_DIM_0),    //4
+      .A_COMPUTE_DIM1(DATA_IN_0_PARALLELISM_DIM_1),    //4
+      .B_COMPUTE_DIM0(REAL_WEIGHT_PARALLELISM_DIM_0),  //4
+      .B_COMPUTE_DIM1(REAL_WEIGHT_PARALLELISM_DIM_1),  //4
 
       .A_WIDTH     (DATA_IN_0_PRECISION_0),
       .A_FRAC_WIDTH(DATA_IN_0_PRECISION_1),

@@ -92,6 +92,7 @@ def simulate(
         # Add tb file to python path
 
         sys.path.append(str(project_dir / "hardware" / "test"))
+        print ("sys in simulate.py: ", sys)
 
         test_start = time.time()
         runner.test(

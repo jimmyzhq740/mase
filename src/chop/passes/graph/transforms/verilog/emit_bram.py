@@ -47,14 +47,35 @@ def emit_parameters_in_mem_internal(node, param_name, file_name, data_name):
     )
     # TO DO: change setting parallelism for weight in metadata
     # node.meta["mase"].parameters["hardware"]["verilog_param"][f"{_cap(param_name)}_PARALLELISM_DIM_1"]
-    out_size = int(
-        node.meta["mase"].parameters["hardware"]["verilog_param"][
-            f"{_cap(verilog_param_name)}_PARALLELISM_DIM_0"
-        ]
-        * node.meta["mase"].parameters["hardware"]["verilog_param"][
-            f"{_cap(verilog_param_name)}_PARALLELISM_DIM_1"
-        ]
-    )
+    # out_size = int(
+    #     node.meta["mase"].parameters["hardware"]["verilog_param"][
+    #         f"{_cap(verilog_param_name)}_PARALLELISM_DIM_0"
+    #     ]
+    #     * node.meta["mase"].parameters["hardware"]["verilog_param"][
+    #         f"{_cap(verilog_param_name)}_PARALLELISM_DIM_1"
+    #     ]
+    # )
+
+        # Generalise to have more dimensions.
+    parallel_dims = []
+    dim=len(node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"])
+    for i in range(dim):
+        dim_str = f"{_cap(verilog_param_name)}_PARALLELISM_DIM_{i}"
+        if dim_str in node.meta["mase"].parameters["hardware"]["verilog_param"]:
+            parallel_dims.append(
+                node.meta["mase"].parameters["hardware"]["verilog_param"][dim_str]
+            )
+        else:
+            # If you want to guard against missing dims,
+            # you could default them to 1 or raise an error
+            parallel_dims.append(1)
+
+    # Now multiply them all together:
+    out_size = 1
+    for dim_val in parallel_dims:
+        out_size *= dim_val
+    print ("out_size:", out_size)
+
     print ("out_size in emit_parameters_in_mem_internal:",out_size)
     out_depth = int((total_size + out_size - 1) / out_size)
     out_width = int(
@@ -150,6 +171,7 @@ module {node_param_name}_source #(
     input                        data_out_ready
 );
   // 1-bit wider so IN_DEPTH also fits.
+  // counter: tells which line in the rom to take data
   localparam COUNTER_WIDTH = $clog2(OUT_DEPTH);
   logic [COUNTER_WIDTH:0] counter;
 
@@ -157,6 +179,7 @@ module {node_param_name}_source #(
     if (rst) counter <= 0;
     else begin
       if (data_out_ready) begin
+      // when counter reaches the last line of the rom, counter becomes 0 again
         if (counter == OUT_DEPTH - 1) counter <= 0;
         else counter <= counter + 1;
       end
@@ -169,9 +192,9 @@ module {node_param_name}_source #(
   logic ce0;
   assign ce0 = data_out_ready;
 
-  logic [{_cap(verilog_param_name)}_PRECISION_0*{_cap(verilog_param_name)}_PARALLELISM_DIM_0*{_cap(verilog_param_name)}_PARALLELISM_DIM_1-1:0] data_vector;
+  logic [{_cap(verilog_param_name)}_PRECISION_0*{_cap(verilog_param_name)}_PARALLELISM_DIM_0*{_cap(verilog_param_name)}_PARALLELISM_DIM_1*{_cap(verilog_param_name)}_PARALLELISM_DIM_2*{_cap(verilog_param_name)}_PARALLELISM_DIM_3-1:0] data_vector;
   {node_param_name} #(
-      .DATA_WIDTH({_cap(verilog_param_name)}_PRECISION_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_1),
+      .DATA_WIDTH({_cap(verilog_param_name)}_PRECISION_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_1*{_cap(verilog_param_name)}_PARALLELISM_DIM_2*{_cap(verilog_param_name)}_PARALLELISM_DIM_3),
       .ADDR_RANGE(OUT_DEPTH)
   ) {node_param_name}_mem (
       .clk(clk),
@@ -183,7 +206,7 @@ module {node_param_name}_source #(
 
   // Cocotb/verilator does not support array flattening, so
   // we need to manually add some reshaping process.
-  for (genvar j = 0; j < {_cap(verilog_param_name)}_PARALLELISM_DIM_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_1; j++)
+  for (genvar j = 0; j < {_cap(verilog_param_name)}_PARALLELISM_DIM_0 * {_cap(verilog_param_name)}_PARALLELISM_DIM_1*{_cap(verilog_param_name)}_PARALLELISM_DIM_2*{_cap(verilog_param_name)}_PARALLELISM_DIM_3; j++)
     assign data_out[j] = data_vector[{_cap(verilog_param_name)}_PRECISION_0*j+{_cap(verilog_param_name)}_PRECISION_0-1:{_cap(verilog_param_name)}_PRECISION_0*j];
 
   assign data_out_valid = clear == 2;
@@ -206,20 +229,48 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
     """
     print (node)
     verilog_param_name = param_name.replace(".", "_")
+    print ("verilog_param_name",verilog_param_name)
+    # total_size: the total number of weights
     total_size = math.prod(
         node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"]
     )
+    print ("total_size:", total_size)
+    print ("shape:",node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"])
 
     # TO DO: change setting parallelism for weight in metadata
     # node.meta["mase"].parameters["hardware"]["verilog_param"][f"{_cap(param_name)}_PARALLELISM_DIM_1"]
-    out_size = int(
-        node.meta["mase"].parameters["hardware"]["verilog_param"][
-            f"{_cap(verilog_param_name)}_PARALLELISM_DIM_0"
-        ]
-        * node.meta["mase"].parameters["hardware"]["verilog_param"][
-            f"{_cap(verilog_param_name)}_PARALLELISM_DIM_1"
-        ]
-    )
+    # out_size: determines how many weights written in one line in rom:
+    print (" node.meta[mase].parameters[hardware][verilog_param]",node.meta["mase"].parameters["hardware"]["verilog_param"])
+    # out_size = int(
+    #     node.meta["mase"].parameters["hardware"]["verilog_param"][
+    #         f"{_cap(verilog_param_name)}_PARALLELISM_DIM_0"
+    #     ]
+    #     * node.meta["mase"].parameters["hardware"]["verilog_param"][
+    #         f"{_cap(verilog_param_name)}_PARALLELISM_DIM_1"
+    #     ]
+    # )
+
+    # Generalise to have more dimensions.
+    parallel_dims = []
+    dim=len(node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"])
+    for i in range(dim):
+        dim_str = f"{_cap(verilog_param_name)}_PARALLELISM_DIM_{i}"
+        if dim_str in node.meta["mase"].parameters["hardware"]["verilog_param"]:
+            parallel_dims.append(
+                node.meta["mase"].parameters["hardware"]["verilog_param"][dim_str]
+            )
+        else:
+            # If you want to guard against missing dims,
+            # you could default them to 1 or raise an error
+            parallel_dims.append(1)
+
+    # Now multiply them all together:
+    out_size = 1
+    for dim_val in parallel_dims:
+        out_size *= dim_val
+    print ("out_size:", out_size)
+
+    # out_depth determines the number of “lines” (or addresses) in your ROM
     out_depth = int((total_size + out_size - 1) / out_size)
 
     data_buff = ""
@@ -242,13 +293,18 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
                 ],
             ),
         )
+        print ("param_data in emit_parameters_in_dat_internal after reshape: ", param_data)
         param_data = torch.transpose(param_data, 0, 1)
+        print ("param_data in emit_parameters_in_dat_internal after transpose: ", param_data)
+
     param_data = torch.flatten(param_data).tolist()
+    print ("param_data in emit_parameters_in_dat_internal after flatten: ", param_data)
 
     if (
         node.meta["mase"].parameters["common"]["args"][verilog_param_name]["type"]
         == "fixed"
     ):
+        # the number of bits per weight is determined by:
         width = node.meta["mase"].parameters["common"]["args"][verilog_param_name][
             "precision"
         ][0]
@@ -271,16 +327,19 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
                     value = 0
                 else:
                     value = param_data[i * out_size + out_size - 1 - j]
-
+                print ("value in dec:",round(value,4))
                 # TODO: please clear this up later
                 value = base_quantizer(torch.tensor(value), width, frac_width).item()
+                print ("value in signed fixed:",value)
                 value = str(bin(value))
+                print ("value in binary:",value)
                 value_bits = value[value.find("0b") + 2 :]
                 value_bits = "0" * (width - len(value_bits)) + value_bits
                 assert len(value_bits) == width
                 value_bits = hex(int(value_bits, 2))
                 value_bits = value_bits[value_bits.find("0x") + 2 :]
                 value_bits = "0" * (width // 4 - len(value_bits)) + value_bits
+                print ("value_bits:", value_bits)
                 line_buff = value_bits + line_buff
 
             data_buff += line_buff + "\n"
@@ -366,7 +425,7 @@ def emit_bram_handshake(node, rtl_dir):
     node_name = vf(node.name)
     for param_name, parameter in node.meta["mase"].module.named_parameters():
         print ("param_name in emit_bram_handshake:",param_name)
-        print ("parameter in emit_bram_handshake:", parameter)
+        # print ("parameter in emit_bram_handshake:", parameter)
         param_verilog_name = param_name.replace(".", "_")
         if (
             node.meta["mase"].parameters["hardware"]["interface"][param_verilog_name][

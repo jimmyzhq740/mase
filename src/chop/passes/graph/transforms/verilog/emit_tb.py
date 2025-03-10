@@ -55,11 +55,11 @@ async def test(dut):
     in_tensors = tb.generate_inputs(batches={batch_size})
     exp_out = tb.model(*list(in_tensors.values()))
 
-    print ("in_tensors: ", in_tensors)
-    print (tb.model)
+    # print ("in_tensors: ", in_tensors)
+    # print (tb.model)
     # print ("weight: ", tb.model.fc1.weight)
     # print ("Bias: ", tb.model.fc1.bias)
-    print ("exp_out: ", exp_out)
+    # print ("exp_out: ", exp_out)
 
     tb.load_drivers(in_tensors)
     tb.load_monitors(exp_out)
@@ -84,13 +84,17 @@ def _emit_cocotb_tb(graph):
 
             for node in graph.nodes_in:
                 for arg in node.meta["mase"]["common"]["args"].keys():
+                    print ("arg in _emit_cocotb:", arg)
                     if "data_in" not in arg:
                         continue
+                    print ("getattr(dut, arg)",getattr(dut, arg))
+                    print ("getattr(dut, arg).value",getattr(dut, arg).value)
                     self.input_drivers[arg] = StreamDriver(
                         dut.clk,
                         getattr(dut, arg),
                         getattr(dut, f"{arg}_valid"),
                         getattr(dut, f"{arg}_ready"),
+
                     )
                     self.input_drivers[arg].log.setLevel(logging.DEBUG)
 
@@ -138,7 +142,8 @@ def _emit_cocotb_tb(graph):
                 # [batches] + arg_info["shape"][1:] means you take the single-element list [batches]
                 # (for example, [32]) and then append [3, 224, 224] to get [32, 3, 224, 224].
                     inputs[f"{arg}"] = torch.rand(([batches] + arg_info["shape"][1:]))
-                    print ("inputs in generate_inputs:", inputs)
+                    # print ("inputs in generate_inputs:", inputs)
+                    # print ("end")
             return inputs
 
         # def model(self, inputs):
@@ -160,9 +165,30 @@ def _emit_cocotb_tb(graph):
 
         def load_drivers(self, in_tensors):
             print ("load_drivers in emit_tb.py")
+            # for arg, arg_batches in in_tensors.items():
+            #     print ("arg in load_drivers in emit_tb: ",arg)
+            #     print ("arg_batch in load_drivers in emit_tb: ",arg_batches)
+
             for arg, arg_batches in in_tensors.items():
-                print ("arg in load_drivers in emit_tb: ",arg)
-                print ("arg_batch in load_drivers in emit_tb: ",arg_batches)
+
+                for key, value in in_tensors.items():
+                   if key == 'data_in_0':
+                       tensor_dim = value.dim()
+                       print ("tensor_dim:", tensor_dim)
+                in_tensor_size= in_tensors
+
+                # Build the parallelism list dynamically.
+                # If tensor_dim = n, this gives you indices [0, 1, ..., n-2],
+                 #    i.e., n-1 parameters total.
+                parallelism_list = [
+                self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_{i}")
+                for i in range(tensor_dim)
+                ]
+                # parallelism_list= [16,1]
+                # reverse the order
+                parallelism_list_into_fixed_process= parallelism_list[::-1]
+
+                print ("parallelism_list:",parallelism_list_into_fixed_process )
                 # Quantize input tensor according to precision
                 if len(self.input_precision) > 1:
                     from mase_cocotb.utils import fixed_preprocess_tensor
@@ -175,31 +201,50 @@ def _emit_cocotb_tb(graph):
                                 f"{_cap(arg)}_PRECISION_1"
                             ),
                         },
-                        parallelism=[
-                            self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_1"),
-                            self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_0"),
-                        ],
+                        parallelism=parallelism_list_into_fixed_process
+                        # parallelism=[
+                        #     self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_1"),
+                        #     self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_0"),
+                        #     # self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_2"),
+                        # ],
                     )
+
 
                 else:
                     # TO DO: convert to integer equivalent of floating point representation
                     pass
 
                 # Append all input blocks to input driver
-                # ! TO DO: generalize
-                block_size = self.get_parameter(
-                    "DATA_IN_0_PARALLELISM_DIM_0"
-                ) * self.get_parameter("DATA_IN_0_PARALLELISM_DIM_1")
+                # ! TO DO: generalize I help you here::::
+                block_size = 1
+                for i in range(tensor_dim):
+                    block_size *= self.get_parameter(f"{_cap(arg)}_PARALLELISM_DIM_{i}")
+                # block_size = self.get_parameter(
+                #     "DATA_IN_0_PARALLELISM_DIM_0"
+                # ) * self.get_parameter("DATA_IN_0_PARALLELISM_DIM_1")
+                print ("block_size:",block_size)
                 print ("in_data_blocks:", in_data_blocks)
                 for block in in_data_blocks:
                     if len(block) < block_size:
                         block = block + [0] * (block_size - len(block))
+                        # This is where it creates 0s if the data sends in is not as big as block_size
+                    print ("block sending in:", block)
                     self.input_drivers[arg].append(block)
-                    print ("self.input_drivers in load_drivers:",self.input_drivers)
+                    # print ("self.input_drivers in load_drivers:",self.input_drivers)
 
         def load_monitors(self, expectation):
             from mase_cocotb.utils import fixed_preprocess_tensor
 
+            print ("expectations:", expectation)
+            exp_shape=expectation.dim()
+            print ("shape of expectations:", exp_shape)
+            parallelism_list = [
+                self.get_parameter(f"DATA_OUT_0_PARALLELISM_DIM_{i}")
+                for i in range(exp_shape)
+                ]
+                # parallelism_list= [16,1]
+                # reverse the order
+            parallelism_list_into_fixed_process= parallelism_list[::-1]
             # Process the expectation tensor
             output_blocks = fixed_preprocess_tensor(
                 tensor=expectation,
@@ -207,20 +252,23 @@ def _emit_cocotb_tb(graph):
                     "width": self.get_parameter(f"DATA_OUT_0_PRECISION_0"),
                     "frac_width": self.get_parameter(f"DATA_OUT_0_PRECISION_1"),
                 },
-                parallelism=[
-                    self.get_parameter(f"DATA_OUT_0_PARALLELISM_DIM_1"),
-                    self.get_parameter(f"DATA_OUT_0_PARALLELISM_DIM_0"),
-                ],
+                parallelism=parallelism_list_into_fixed_process
+                # parallelism=[
+                #     self.get_parameter(f"DATA_OUT_0_PARALLELISM_DIM_1"),
+                #     self.get_parameter(f"DATA_OUT_0_PARALLELISM_DIM_0"),
+                # ],
             )
-
+            print ("output_blocks in load_monitors:", output_blocks)
             # Set expectation for each monitor
             for block in output_blocks:
-                # ! TO DO: generalize to multi-output models
+                # ! TO DO: generalize to multi-output models I help you here:
                 if len(block) < self.get_parameter("DATA_OUT_0_PARALLELISM_DIM_0"):
                     block = block + [0] * (
                         self.get_parameter("DATA_OUT_0_PARALLELISM_DIM_0") - len(block)
                     )
                 self.output_monitors["data_out_0"].expect(block)
+
+                print ("block in load_monitors in emit_tb.py:", block)
 
             # Drive the in-flight flag for each monitor
             self.output_monitors["data_out_0"].in_flight = True

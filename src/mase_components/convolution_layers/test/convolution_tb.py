@@ -29,7 +29,7 @@ import torch.nn.functional as F
 
 
 class ConvArithTB(Testbench):
-    def __init__(self, dut, samples=1) -> None:
+    def __init__(self, dut, samples=2) -> None:
         super().__init__(dut, dut.clk, dut.rst)
         self.samples = samples
 
@@ -126,6 +126,7 @@ class ConvArithTB(Testbench):
         ix = self.get_parameter("IN_X")
         # get parameters with integer format
         # it's shape of 4, randn will generate values for this 4D tensor
+        samples=2
         x = 5 * torch.randn(samples, ic, iy, ix)
 
         _dict = self.model.get_quantized_weights_with_inputs(x)
@@ -273,7 +274,7 @@ class ConvArithTB(Testbench):
         self.data_out_0_monitor.load_monitor(o)
 
         # cocotb.start_soon(check_signal(self.dut, self.log))
-        await Timer(100, units="us")
+        await Timer(300, units="us")
         assert self.data_out_0_monitor.exp_queue.empty()
 
 
@@ -305,8 +306,8 @@ def get_fixed_conv_config(kwargs={}):
     config = {
         "IN_C": 4,
         "UNROLL_IN_C": 2,
-        "IN_X": 3,
-        "IN_Y": 3,
+        "IN_X": 4,
+        "IN_Y": 4,
         "KERNEL_X": 3,
         "KERNEL_Y": 2,
         "UNROLL_KERNEL_OUT": 3,

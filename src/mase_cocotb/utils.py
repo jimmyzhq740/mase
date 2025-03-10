@@ -115,31 +115,89 @@ def fixed_preprocess_tensor(tensor: Tensor, q_config: dict, parallelism: list) -
     Returns:
         list: Processed blocks in nested list format.
     """
+    print ("parallelism in fixed_process_tensor:", parallelism )
     if len(tensor.shape) == 1:
         tensor = tensor.unsqueeze(0)
+
 
     if len(parallelism) == 1:
         parallelism = [1, parallelism[0]]
 
+    # flattens all dimensions except the last one.
     # * Flatten batch dimension
-    tensor = tensor.view((-1, tensor.shape[-1]))
+    # tensor.shape[-1], you’re referring to the size of the last dimension of the tensor.
+    # This means we flatten into dimension that equals to teh batch size
+
+    print ("tensor before tensor:",tensor)
+    if len (tensor.shape) > 2:
+        print ('nihhhhhjhj')
+        # flatten  batch and channel dimension
+        tensor = tensor.view(-1,tensor.shape[-3] ,tensor.shape[-2], tensor.shape[-1])
+    else:
+        tensor = tensor.view((-1, tensor.shape[-1]))
+    # tensor = tensor.view((-1, tensor.shape[-1]))
+    print ("tensor after tensor:",tensor)
 
     # Quantize
     quantizer = partial(integer_floor_quantizer, **q_config)
     q_tensor = quantizer(tensor)
 
+
     # Convert to integer format
     q_tensor = (q_tensor * 2 ** q_config["frac_width"]).int()
+    print ("q_tensor in fixed_preprocess_tensor:",q_tensor)
 
-    # Split into chunks according to parallelism in each dimension
-    # parallelism[0]: along rows, parallelism[1]: along columns
-    dim_0_split = q_tensor.split(parallelism[0], dim=0)
-    dim_1_split = [x.split(parallelism[1], dim=1) for x in dim_0_split]
+    # # Split into chunks according to parallelism in each dimension
+    # # E.g. if first dimension is 2, dim_0 split into two chunks
+    # # parallelism[0], dim0, split parallelism[0] along rows(dim0), parallelism[1]: along columns
+    # # q_tensor has only 2 rows (shape [2,16])
+    # dim_0_split = q_tensor.split(parallelism[0], dim=0)
+    # print ("dim_0_split:", dim_0_split)
+    # dim_1_split = [x.split(parallelism[1], dim=1) for x in dim_0_split]
+    # print ("dim_1_split:", dim_1_split)
+
+#     dim_2_split = [
+#     y.split(parallelism[2], dim=2)    # y is a single Tensor
+#     for x in dim_1_split             # x is a tuple
+#     for y in x
+# ]
+#     print ("dim_2_split:", dim_2_split)
+
+#     dim_3_split = [
+#         z.split(parallelism[3], dim=3)  # z is a single Tensor
+#         for sublist in dim_2_split      # sublist is a list of Tensors
+#         for z in sublist
+#     ]
+#     print("dim_3_split:", dim_3_split)
+
+    splits = [q_tensor]  # Start with a single-element list containing your original tensor
+
+    for i, size in enumerate(parallelism):
+        new_splits = []
+        # For each tensor in our current list, split it along dimension i,
+        # then flatten them into one big list again
+        for t in splits:
+            split_result = t.split(size, dim=i)
+            new_splits.extend(split_result)  # Flatten them into a single list
+        splits = new_splits
+
+    # After this loop, `splits` contains every sub-tensor from all dimensions
+    print("Final splitted result:", splits)
     blocks = []
     # Flatten the list of blocks
-    for i in range(len(dim_1_split)):
-        for j in range(len(dim_1_split[i])):
-            blocks.append(dim_1_split[i][j].flatten().tolist())
+    # for i in range(len(dim_1_split)):
+    #     for j in range(len(dim_1_split[i])):
+    #         # print (f"dim_1_split[{i}]",dim_1_split[i])
+    #         # print (f"dim_1_split[{i}][{j}]:", dim_1_split[i][j])
+    #         # flatten-> converts tensor into 1d
+    #         # tolist converts tensor into list
+    #         blocks.append(dim_1_split[i][j].flatten().tolist())
+
+    # blocks = []
+    for t in splits:
+        blocks.append(t.flatten().tolist())
+
+    print("blocks =", blocks)
 
     return blocks
 

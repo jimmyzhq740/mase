@@ -451,9 +451,10 @@ def add_hardware_metadata_analysis_pass(graph, pass_args={}):
 
     # * Fix max parallelism to small value to enable verilator simulation
     # ! TO DO: enable this to be overriden by user
+    print (" I changed max_parallelism add_hardware_metadata_analysis_pass")
     for node in graph.nodes:
         node.meta["mase"]["hardware"]["max_parallelism"] = pass_args.get(
-            "max_parallelism", [4] * 4
+            "max_parallelism", [2] * 4
         )
 
     # Add hardware parameters

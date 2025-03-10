@@ -51,7 +51,10 @@ class StreamDriver(Driver):
                     wire.value = val
             else:
                 # Drive single data
+                # print ("transaction in StreamDriver class in streaming.py:", transaction)
+                # print ("data value in StreamDriver class in streaming.py:", self.data.value)
                 self.data.value = transaction
+
             if random.random() > self.valid_prob:
                 self.valid.value = 0
                 continue  # Try roll random valid again at next clock

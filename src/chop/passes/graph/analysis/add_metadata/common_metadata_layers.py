@@ -548,6 +548,9 @@ def _annotate_arg_metadata(
 
     # * Handle args
     for i, x in enumerate(args):
+        print ("args[i]:",args[i])
+        print ("get_shape(args[i])",get_shape(args[i]))
+        # print ("i in _annotate_arg_metadata:", i )
         # print ("i:",i)
         # print ("x:", x)
         # Input data tensor
@@ -600,7 +603,7 @@ def _annotate_arg_metadata(
     print ("kwargs: ", kwargs)
 
     for k, v in kwargs.items():
-        # print (k,v)
+        print ("k,v in _annotate_arg_metadata:", k,v )
         # print ('nihap')
         # print ("func_data: ", func_data)
         # print ('hello')
