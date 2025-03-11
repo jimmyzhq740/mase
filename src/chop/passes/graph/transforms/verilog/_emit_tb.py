@@ -219,6 +219,8 @@ from chop.passes.graph.transforms.quantize.quantizers.quantizers_for_hw import (
 class MaseGraphTB(Testbench):
     def __init__(self, dut):
         super().__init__(dut, dut.clk, dut.rst)
+        self._log = logging.getLogger("MaseGraphTB")
+
 
         # Instantiate drivers
         self.input_drivers.extend([

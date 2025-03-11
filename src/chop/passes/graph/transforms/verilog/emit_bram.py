@@ -45,7 +45,7 @@ def emit_parameters_in_mem_internal(node, param_name, file_name, data_name):
     total_size = math.prod(
         node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"]
     )
-    # TO DO: change setting parallelism for weight in metadata
+    # # TO DO: change setting parallelism for weight in metadata
     # node.meta["mase"].parameters["hardware"]["verilog_param"][f"{_cap(param_name)}_PARALLELISM_DIM_1"]
     # out_size = int(
     #     node.meta["mase"].parameters["hardware"]["verilog_param"][
@@ -161,7 +161,10 @@ module {node_param_name}_source #(
     parameter {_cap(verilog_param_name)}_PARALLELISM_DIM_2 = 1,
     parameter {_cap(verilog_param_name)}_PARALLELISM_DIM_3 = 1,
 
-    parameter OUT_DEPTH = (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_0 + {_cap(verilog_param_name)}_PARALLELISM_DIM_0 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_0) * (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_1 + {_cap(verilog_param_name)}_PARALLELISM_DIM_1 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_1)
+    parameter OUT_DEPTH = (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_0 + {_cap(verilog_param_name)}_PARALLELISM_DIM_0 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_0)
+                        * (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_1 + {_cap(verilog_param_name)}_PARALLELISM_DIM_1 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_1)
+                        * (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_2 + {_cap(verilog_param_name)}_PARALLELISM_DIM_0 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_2)
+                        * (({_cap(verilog_param_name)}_TENSOR_SIZE_DIM_3 + {_cap(verilog_param_name)}_PARALLELISM_DIM_3 - 1) / {_cap(verilog_param_name)}_PARALLELISM_DIM_3)
 ) (
     input clk,
     input rst,
@@ -250,7 +253,7 @@ def emit_parameters_in_dat_internal(node, param_name, file_name):
     #     ]
     # )
 
-    # Generalise to have more dimensions.
+    # # Generalise to have more dimensions.
     parallel_dims = []
     dim=len(node.meta["mase"].parameters["common"]["args"][verilog_param_name]["shape"])
     for i in range(dim):

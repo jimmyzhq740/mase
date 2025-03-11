@@ -129,8 +129,10 @@ module convolution_mase #(
     else $fatal("UNROLL parameter not set correctly");
   end
 
+  assign weight_ready = 1'b1;
+
   // Define internal logic for unroll data
-  logic [ DATA_IN_0_PRECISION_0 - 1:0] internal_data_in_0 [                  UNROLL_IN_C - 1 : 0];
+  logic [ DATA_IN_0_PRECISION_0 - 1:0] sliding_data_in_0  [                  UNROLL_IN_C - 1 : 0];
   logic [      WEIGHT_PRECISION_0-1:0] internal_weight    [UNROLL_KERNEL_OUT * UNROLL_OUT_C -1:0];
   logic [        BIAS_PRECISION_0-1:0] internal_bias      [                        BIAS_SIZE-1:0];
   logic [DATA_OUT_0_PRECISION_0 - 1:0] internal_data_out_0[                   UNROLL_OUT_C - 1:0];
@@ -153,7 +155,7 @@ module convolution_mase #(
   logic rolled_k_ready;
   for (genvar i = 0; i < UNROLL_IN_C; i++)
   for (genvar j = 0; j < DATA_IN_0_PRECISION_0; j++)
-    assign packed_data_in[i*DATA_IN_0_PRECISION_0+j] = internal_data_in_0[i][j];
+    assign packed_data_in[i*DATA_IN_0_PRECISION_0+j] = sliding_data_in_0[i][j];
 
   logic [DATA_IN_0_PRECISION_0 * UNROLL_IN_C - 1:0] packed_kernel[KERNEL_Y * KERNEL_X - 1:0];
   // in the array packed_kernel whose size is defined by filter size
@@ -163,6 +165,31 @@ module convolution_mase #(
   logic [DATA_IN_0_PRECISION_0 - 1:0] kernel[KERNEL_Y * KERNEL_X * UNROLL_IN_C - 1:0];
   logic kernel_valid;
   logic kernel_ready;
+
+
+  data_in_reshaper #(
+      .DATA_WIDTH     (DATA_IN_0_PRECISION_0),        // Data width
+      .IMG_WIDTH      (DATA_IN_0_TENSOR_SIZE_DIM_0),  // Image width
+      .IMG_HEIGHT     (DATA_IN_0_TENSOR_SIZE_DIM_1),  // Image height
+      .IN_CHANNELS    (DATA_IN_0_TENSOR_SIZE_DIM_2),  // Input channels
+      .BATCH_SIZE     (DATA_IN_0_TENSOR_SIZE_DIM_3),  // Number of batches
+      .UNROLL_CHANNELS(UNROLL_IN_C),                  // Number of channels processed in parallel
+      .SPATIAL_GROUP_X(DATA_IN_0_PARALLELISM_DIM_0),  // X dimension of spatial groups
+      .SPATIAL_GROUP_Y(DATA_IN_0_PARALLELISM_DIM_1)
+  ) data_in_reshaper_0 (
+      .clk(clk),
+      .rst(rst),
+      .data_in(data_in_0),
+      .data_in_valid(data_in_0_valid),
+      .data_in_ready(data_in_0_ready),
+      .data_out_ready(reshape_ready),
+      .data_out_valid(reshape_valid),
+      .data_out(sliding_data_in_0)
+  );
+
+  logic reshape_valid;
+  logic reshape_ready;
+
 
   //   Function of sliding window:
   // You feed it a stream of data, where each clock cycle provides up to UNROLL_IN_C pixels (data_in_0),
@@ -184,8 +211,8 @@ module convolution_mase #(
       /* verilator lint_off PINMISSING */
   ) sw_inst (
       .data_in(packed_data_in),
-      .data_in_valid(data_in_0_valid),
-      .data_in_ready(data_in_0_ready),
+      .data_in_valid(reshape_valid),
+      .data_in_ready(reshape_ready),
 
       .data_out(packed_kernel),
       .data_out_valid(kernel_valid),

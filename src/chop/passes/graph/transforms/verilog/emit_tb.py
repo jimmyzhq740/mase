@@ -35,7 +35,7 @@ def _emit_cocotb_test(graph, pass_args={}):
 
     wait_time = pass_args.get("wait_time", 2)
     wait_unit = pass_args.get("wait_units", "ms")
-    batch_size = pass_args.get("batch_size", 1)
+    batch_size = pass_args.get("batch_size", 2)
 
     test_template = f"""
 import cocotb
@@ -64,6 +64,64 @@ async def test(dut):
     tb.load_drivers(in_tensors)
     tb.load_monitors(exp_out)
 
+    def bin_to_signed_int(binary_string):
+        bits = len(binary_string)
+        value = int(binary_string, 2)
+        # If the sign bit is set, convert using two's complement
+        if value >= (1 << (bits - 1)):
+            value -= (1 << bits)
+        return value
+
+    # Monitor DUT during execution
+    for cycle in range(100):  # Observe for 50 cycles
+        await Timer(10, units="ns")  # Adjust timing based on design
+        tb._log.info(f"Cycle {{cycle+1}}:")
+        tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
+        tb._log.info(f"  Layer1 Output: {{dut.conv1_data_out_0.value}}")
+        tb._log.info(f"  Weight: {{dut.conv1_weight.value}}")
+        tb._log.info(f"  clk: {{dut.clk.value}}")
+        decimal_value_data_in_0 = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_0.value]
+        tb._log.info(f"  convolution_mase_data_in_0: {{decimal_value_data_in_0}}")
+        decimal_value_sliding_data_in_0 = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.sliding_data_in_0.value]
+        tb._log.info(f"  convolution_mase_sliding_data_in_0: {{decimal_value_sliding_data_in_0}}")
+        decimal_value_data_buffer = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_buffer.value]
+        tb._log.info(f"  convolution_mase_data_buffer: {{decimal_value_data_buffer}}")
+        decimal_value_reshape_data_in = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in.value]
+        tb._log.info(f"  convolution_reshape_data_in: {{decimal_value_reshape_data_in}}")
+        decimal_value_reshape_data_in[0] = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in[0].value]
+
+
+
+        # tb._log.info(f"  convolution_reshape_data_in[0]: {{dut.conv1_inst.data_in_reshaper_0.data_in[0].value}}")
+        # tb._log.info(f"  convolution_reshape_data_in[1]: {{dut.conv1_inst.data_in_reshaper_0.data_in[1].value}}")
+        # tb._log.info(f"  convolution_reshape_data_in[2]: {{dut.conv1_inst.data_in_reshaper_0.data_in[2].value}}")
+        # tb._log.info(f"  convolution_reshapae_valid_in: {{dut.conv1_inst.data_in_reshaper_0.data_in_valid.value}}")
+        # tb._log.info(f"  convolution_reshapae_ready_in: {{dut.conv1_inst.data_in_reshaper_0.data_in_ready.value}}")
+        # decimal_value_reshape_x_count = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.x_count.value]
+        # tb._log.info(f"  convolution_reshape_x_count: {{decimal_value_reshape_x_count}}")
+        # decimal_value_reshape_y_count = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.y_count.value]
+        # tb._log.info(f"  convolution_reshape_y_count: {{decimal_value_reshape_y_count}}")
+        # decimal_value_reshape_channel_group = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.channel_group.value]
+        # tb._log.info(f"  convolution_reshape_channel_group: {{decimal_value_reshape_channel_group}}")
+
+
+
+
+        # tb._log.info(f"  conv1_weight_source_0.data_out_ready: {{dut.conv1_weight_source_0.data_out_ready.value}}")
+        # tb._log.info(f"  Counter: {{dut.conv1_weight_source_0.counter.value}}")
+        # tb._log.info(f"  Weight_data_out_valid: {{dut.conv1_weight_source_0.data_out_valid.value}}")
+        # tb._log.info(f"  RAM_address: {{dut.conv1_weight_source_0.conv1_weight_mem.conv1_weight_rom_U.addr0.value}}")
+        # tb._log.info(f"  RAM: {{dut.conv1_weight_source_0.conv1_weight_mem.conv1_weight_rom_U.ram.value}}")
+        # tb._log.info(f"  q0_t0: {{dut.conv1_weight_source_0.conv1_weight_mem.conv1_weight_rom_U.q0_t0.value}}")
+        # tb._log.info(f"  q0_t1: {{dut.conv1_weight_source_0.conv1_weight_mem.conv1_weight_rom_U.q0_t1.value}}")
+
+        # tb._log.info(f"  Layer1 Input: {{dut.fc1_data_in_0.value}}")
+        # tb._log.info(f"  Layer1 Output: {{dut.fc1_data_out_0.value}}")
+        # tb._log.info(f"  Weight: {{dut.fc1_weight.value}}")
+        # tb._log.info(f"  clk: {{dut.clk.value}}")
+        # tb._log.info(f"  conv1_weight_source_0.data_out_ready: {{dut.fc1_weight_source_0.data_out_ready.value}}")
+        # tb._log.info(f"  Counter: {{dut.fc1_weight_source_0.counter.value}}")
+
     await tb.wait_end(timeout={wait_time}, timeout_unit="{wait_unit}")
 """
 
@@ -77,6 +135,10 @@ def _emit_cocotb_tb(graph):
     class MaseGraphTB(Testbench):
         def __init__(self, dut, fail_on_checks=True):
             super().__init__(dut, dut.clk, dut.rst, fail_on_checks=fail_on_checks)
+                    # Initialize a logger for the testbench
+            self._log = logging.getLogger("MaseGraphTB")
+            self._log.setLevel(logging.DEBUG)
+
 
             # Instantiate as many drivers as required inputs to the model
             self.input_drivers = {}

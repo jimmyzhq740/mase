@@ -66,7 +66,7 @@ INTERNAL_COMP = {
             # name: the name of most top module file for conv layer
             # the layer that connects other submodules, which will be used in top.sv
             # needs to match the same name as that module
-            "name": "convolution",
+            "name": "convolution_mase",
             "dependence_files":[
                 "linear_layers/fixed_operators/rtl/fixed_dot_product.sv",
                 "linear_layers/fixed_operators/rtl/fixed_vector_mult.sv",
@@ -90,6 +90,8 @@ INTERNAL_COMP = {
                 "convolution_layers/rtl/padding.sv",
                 "convolution_layers/rtl/roller.sv",
                 "convolution_layers/rtl/sliding_window.sv",
+                "convolution_layers/rtl/data_in_reshaper.sv"
+
             ],
         },
     ],
