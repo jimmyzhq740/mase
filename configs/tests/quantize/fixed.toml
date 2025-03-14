@@ -7,12 +7,12 @@ report = true
 
 [passes.quantize.default.config]
 name = "fixed"
-data_in_width = 8
+data_in_width = 9
 data_in_frac_width = 5
-weight_width = 8
+weight_width = 9
 weight_frac_width = 5
-bias_width = 8
+bias_width = 9
 bias_frac_width = 5
-data_out_width = 8
+data_out_width = 9
 data_out_frac_width = 5
 floor=true

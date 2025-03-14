@@ -90,7 +90,11 @@ INTERNAL_COMP = {
                 "convolution_layers/rtl/padding.sv",
                 "convolution_layers/rtl/roller.sv",
                 "convolution_layers/rtl/sliding_window.sv",
-                "convolution_layers/rtl/data_in_reshaper.sv"
+                "convolution_layers/rtl/data_in_reshaper.sv",
+                "convolution_layers/rtl/padding_mase.sv",
+                "convolution_layers/rtl/striding.sv",
+                "convolution_layers/rtl/weight_buffer.sv",
+                "convolution_layers/rtl/small_convolution_arith.sv"
 
             ],
         },

@@ -94,7 +94,7 @@ module data_in_reshaper #(
                 data_buffer[buffer_idx] = data_in[input_idx];
                 // $display("Buffer", data_buffer[buffer_idx], $time, "   index", buffer_idx);
                 // $display("input ", data_in[input_idx], $time, "  index", input_idx);
-                //  $display("reversehaha");
+
               end
             end
           end
@@ -139,7 +139,7 @@ module data_in_reshaper #(
       // Start processing when buffer is filled
       processing <= 1;
       data_out_valid <= 1;
-    end else if (processing) begin
+    end else if (processing && data_out_ready) begin
       output_count <= output_count + 1;
 
       // Update position counters

@@ -53,7 +53,7 @@ module padding #(
       count_x <= 0;
       count_y <= 0;
     end else if (data_out_valid && data_out_ready)
-      if(count_c == CHANNELS - 1 
+      if(count_c == CHANNELS - 1
                 && count_x == PADDING_WIDTH *2 + IMG_WIDTH - 1
                 && count_y == PADDING_HEIGHT*2 + IMG_HEIGHT - 1) begin
         count_c <= 0;
@@ -85,6 +85,9 @@ module padding #(
   /* verilator lint_on UNSIGNED */
   /* verilator lint_on WIDTH */
 
+  //Each time the module steps to a new (x,y,channel) coordinate in the padded space, it checks “am I in the original image region?”
+  // Yes → Pass the pixel from the skid buffer (data_out = reg_out).
+  // No → Output zero (data_out = 0).
   assign data_out = (padding_condition) ? 0 : reg_out;
   assign data_out_valid = (padding_condition) ? start : reg_out_valid;
   assign reg_out_ready = (padding_condition) ? 0 : data_out_ready;

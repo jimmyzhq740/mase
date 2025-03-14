@@ -58,7 +58,7 @@ module sliding_window_buffer #(
   /* verilator lint_off WIDTH */
   always_comb begin
     // consider the input matrix
-    // row input first, 
+    // row input first,
     // only if input the whole row*channel,
     // then input the next row, so column + 1
     if (in_cx == LINE_WIDTH - 1) begin
@@ -267,7 +267,6 @@ module sliding_window_stride #(
   assign data_out_valid = sliding_valid && stride_enable;
   assign sliding_ready = data_out_ready || (!stride_enable);
   assign data_out = buffer_data;
-
 
 endmodule
 

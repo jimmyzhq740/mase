@@ -35,7 +35,7 @@ def _emit_cocotb_test(graph, pass_args={}):
 
     wait_time = pass_args.get("wait_time", 2)
     wait_unit = pass_args.get("wait_units", "ms")
-    batch_size = pass_args.get("batch_size", 2)
+    batch_size = pass_args.get("batch_size", 1)
 
     test_template = f"""
 import cocotb
@@ -73,22 +73,112 @@ async def test(dut):
         return value
 
     # Monitor DUT during execution
-    for cycle in range(100):  # Observe for 50 cycles
+    for cycle in range(200):  # Observe for 50 cycles
         await Timer(10, units="ns")  # Adjust timing based on design
         tb._log.info(f"Cycle {{cycle+1}}:")
-        tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
-        tb._log.info(f"  Layer1 Output: {{dut.conv1_data_out_0.value}}")
-        tb._log.info(f"  Weight: {{dut.conv1_weight.value}}")
+        # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
+        # tb._log.info(f"  Layer1 Output: {{dut.conv1_data_out_0.value}}")
+        # tb._log.info(f"  Weight: {{dut.conv1_weight.value}}")
         tb._log.info(f"  clk: {{dut.clk.value}}")
         decimal_value_data_in_0 = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_0.value]
         tb._log.info(f"  convolution_mase_data_in_0: {{decimal_value_data_in_0}}")
         decimal_value_sliding_data_in_0 = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.sliding_data_in_0.value]
         tb._log.info(f"  convolution_mase_sliding_data_in_0: {{decimal_value_sliding_data_in_0}}")
-        decimal_value_data_buffer = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_buffer.value]
-        tb._log.info(f"  convolution_mase_data_buffer: {{decimal_value_data_buffer}}")
-        decimal_value_reshape_data_in = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in.value]
-        tb._log.info(f"  convolution_reshape_data_in: {{decimal_value_reshape_data_in}}")
-        decimal_value_reshape_data_in[0] = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in[0].value]
+        # decimal_value_data_buffer = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_buffer.value]
+        # tb._log.info(f"  convolution_mase_data_buffer: {{decimal_value_data_buffer}}")
+        # decimal_value_reshape_data_in = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in.value]
+        # tb._log.info(f"  convolution_reshape_data_in: {{decimal_value_reshape_data_in}}")
+        # decimal_value_reshape_data_in[0] = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in[0].value]
+        # tb._log.info(f"  convolution_sliding_data_in: {{dut.conv1_inst.sliding_data_in_0.value}}")
+        # tb._log.info(f"  convolution_packed_data_in: {{dut.conv1_inst.packed_data_in.value}}")
+        # tb._log.info(f"  convolution_packed_kernel: {{dut.conv1_inst.packed_kernel.value}}")
+        # tb._log.info(f"  convolution_data_in_valid: {{dut.conv1_inst.data_in_0_valid.value}}")
+        # tb._log.info(f"  convolution_data_in_ready: {{dut.conv1_inst.data_in_0_ready.value}}")
+        # tb._log.info(f"  convolution_reshape_data_valid: {{dut.conv1_inst.reshape_valid.value}}")
+        # tb._log.info(f"  convolution_reshape_data_ready: {{dut.conv1_inst.reshape_ready.value}}")
+
+        decimal_padding_data_in = bin_to_signed_int(str(dut.conv1_inst.padding_mase_inst1.data_in.value))
+        tb._log.info(f"  convolution_padding_data_in: {{decimal_padding_data_in}}")
+
+        decimal_padding_data_out = bin_to_signed_int(str(dut.conv1_inst.padding_mase_inst1.data_out.value))
+        # decimal_padding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.padding_mase_inst1.data_out.value]
+        tb._log.info(f"  convolution_padding_data_out: {{decimal_padding_data_out}}")
+
+        tb._log.info(f"  convolution_padding_data_in_valid: {{dut.conv1_inst.padding_mase_inst1.data_in_valid.value}}")
+        tb._log.info(f"  convolution_padding_data_in_ready: {{dut.conv1_inst.padding_mase_inst1.data_in_ready.value}}")
+        tb._log.info(f"  convolution_padding_data_out_valid: {{dut.conv1_inst.padding_mase_inst1.data_out_valid.value}}")
+        tb._log.info(f"  convolution_padding_x_origin_count: {{dut.conv1_inst.padding_mase_inst1.x_origin_count.value}}")
+        tb._log.info(f"  convolution_padding_y_origin_count: {{dut.conv1_inst.padding_mase_inst1.y_origin_count.value}}")
+        tb._log.info(f"  convolution_padding_x_padding_count: {{dut.conv1_inst.padding_mase_inst1.x_padding_count.value}}")
+        tb._log.info(f"  convolution_padding_y_padding_count: {{dut.conv1_inst.padding_mase_inst1.y_padding_count.value}}")
+        tb._log.info(f"  convolution_padding_IDLE_State: {{dut.conv1_inst.padding_mase_inst1.IDLE.value}}")
+        tb._log.info(f"  convolution_padding_State1: {{dut.conv1_inst.padding_mase_inst1.state1.value}}")
+        tb._log.info(f"  convolution_padding_State2: {{dut.conv1_inst.padding_mase_inst1.state2.value}}")
+        tb._log.info(f"  convolution_padding_State3: {{dut.conv1_inst.padding_mase_inst1.state3.value}}")
+        tb._log.info(f"  convolution_padding_State4: {{dut.conv1_inst.padding_mase_inst1.state4.value}}")
+        tb._log.info(f"  convolution_padding_data_out_ready: {{dut.conv1_inst.padding_mase_inst1.data_out_ready.value}}")
+        decimal_padding_stored_pixel = bin_to_signed_int(str(dut.conv1_inst.padding_mase_inst1.stored_pixel.value))
+        tb._log.info(f"  convolution_padding_stored_pixel: {{decimal_padding_stored_pixel}}")
+
+        decimal_striding_data_in = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_in.value))
+        tb._log.info(f"  convolution_striding_data_in: {{decimal_striding_data_in}}")
+        decimal_striding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.striding_inst1.result_out.value]
+        tb._log.info(f"  convolution_striding_data_out: {{decimal_striding_data_out}}")
+        decimal_striding_pixel_out = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_count.value))
+        tb._log.info(f"  convolution_striding_pixel_count: {{decimal_striding_pixel_out}}")
+        tb._log.info(f"  convolution_striding_pixel_count_bin: {{dut.conv1_inst.striding_inst1.pixel_count.value}}")
+        tb._log.info(f"  convolution_striding_collect: {{dut.conv1_inst.striding_inst1.collect.value}}")
+        tb._log.info(f"  convolution_striding_output: {{dut.conv1_inst.striding_inst1.output_s.value}}")
+        # tb._log.info(f"  convolution_striding_img: {{dut.conv1_inst.striding_inst1.image_0_0.value}}")
+        # print(dir(dut.conv1_inst.striding_inst1))
+
+
+        # decimal_weight_buffer_ = bin_to_signed_int(str(dut.conv1_inst.weight_buffer_inst..value))
+        decimal_weight_buffer_reading_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.weight_data.value]
+        tb._log.info(f"  convolution_weight_buffer_reading_weight: {{decimal_weight_buffer_reading_weight}}")
+        decimal_weight_buffer_output_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.buffer_out.value]
+        tb._log.info(f"  convolution_weight_buffer_output_weight: {{decimal_weight_buffer_output_weight}}")
+        tb._log.info(f"  convolution_weight_buffer_valid: {{dut.conv1_inst.weight_buffer_inst.buffer_valid.value}}")
+
+
+
+        tb._log.info(f"  convolution_dp_acc_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_valid.value}}")
+        tb._log.info(f"  convolution_dp_acc_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_ready.value}}")
+        tb._log.info(f"  convolution_dp_acc_weight_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.weight_valid.value}}")
+        tb._log.info(f"  convolution_dp_acc_weight_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.weight_ready.value}}")
+        tb._log.info(f"  convolution_dp_acc_data_out_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0_valid.value}}")
+        tb._log.info(f"  convolution_dp_acc_data_out_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0_ready.value}}")
+        decimal_dp_acc_middle_result = bin_to_signed_int(str(dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out.value))
+        tb._log.info(f"  convolution_dp_acc_out_middle_result: {{decimal_dp_acc_middle_result}}")
+        tb._log.info(f"  convolution_dp_acc_out_middle_result: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out.value}}")
+        decimal_dp_acc_data_out = bin_to_signed_int(str(dut.conv1_inst.dp_acc_mase_inst.data_out_0.value))
+        tb._log.info(f"  convolution_dp_acc_out_data_out: {{decimal_dp_acc_data_out}}")
+
+        decimal_dp_acc_fixed_dot_product_current_input_data = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in.value]
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_product_current_input_data: {{decimal_dp_acc_fixed_dot_product_current_input_data}}")
+        decimal_dp_acc_fixed_dot_product_current_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight.value]
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_product_current_weight: {{decimal_dp_acc_fixed_dot_product_current_weight}}")
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in_valid.value}}")
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in_ready.value}}")
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_weight_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight_valid.value}}")
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_weight_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight_ready.value}}")
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_out_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out_valid.value}}")
+        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_out_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out_ready.value}}")
+
+
+        # tb._log.info(f"  padding_data_in: {{dut.conv1_inst.sw_inst.padding_inst.data_in.value}}")
+        # tb._log.info(f"  padding_data_out: {{dut.conv1_inst.sw_inst.padding_inst.data_out.value}}")
+        # tb._log.info(f"  padding_skid_buffer_data_out: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_out.value}}")
+        # tb._log.info(f"  roller_data_out: {{dut.conv1_inst.roller_inst.data_out.value}}")
+        # tb._log.info(f"  padding_skid_buffer_use_buffer_data: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.use_buffered_data.value}}")
+        # tb._log.info(f"  padding_skid_data_buffer_out: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_buffer_out.value}}")
+        # tb._log.info(f"  padding_skid_data_out_wren: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_out_wren.value}}")
+        # tb._log.info(f"  padding_skid_data_in_valid: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_in_valid.value}}")
+        # tb._log.info(f"  padding_skid_data_in_ready: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_in_ready.value}}")
+        # tb._log.info(f"  padding_skid_data_out_valid: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_out_valid.value}}")
+        # tb._log.info(f"  padding_skid_data_out_ready: {{dut.conv1_inst.sw_inst.padding_inst.register_slice.data_out_ready.value}}")
+        # tb._log.info(f"  padding_padding_condition: {{dut.conv1_inst.sw_inst.padding_inst.padding_condition.value}}")
+        # tb._log.info(f"  padding_data_out_ready: {{dut.conv1_inst.sw_inst.padding_inst.data_out_ready.value}}")
 
 
 
