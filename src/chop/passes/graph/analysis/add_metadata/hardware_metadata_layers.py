@@ -94,7 +94,8 @@ INTERNAL_COMP = {
                 "convolution_layers/rtl/padding_mase.sv",
                 "convolution_layers/rtl/striding.sv",
                 "convolution_layers/rtl/weight_buffer.sv",
-                "convolution_layers/rtl/small_convolution_arith.sv"
+                "convolution_layers/rtl/small_convolution_arith.sv",
+                "convolution_layers/rtl/conv_arith_mase.sv"
 
             ],
         },

@@ -73,7 +73,7 @@ async def test(dut):
         return value
 
     # Monitor DUT during execution
-    for cycle in range(200):  # Observe for 50 cycles
+    for cycle in range(500):  # Observe for 50 cycles
         await Timer(10, units="ns")  # Adjust timing based on design
         tb._log.info(f"Cycle {{cycle+1}}:")
         # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
@@ -104,66 +104,100 @@ async def test(dut):
         # decimal_padding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.padding_mase_inst1.data_out.value]
         tb._log.info(f"  convolution_padding_data_out: {{decimal_padding_data_out}}")
 
-        tb._log.info(f"  convolution_padding_data_in_valid: {{dut.conv1_inst.padding_mase_inst1.data_in_valid.value}}")
-        tb._log.info(f"  convolution_padding_data_in_ready: {{dut.conv1_inst.padding_mase_inst1.data_in_ready.value}}")
-        tb._log.info(f"  convolution_padding_data_out_valid: {{dut.conv1_inst.padding_mase_inst1.data_out_valid.value}}")
-        tb._log.info(f"  convolution_padding_x_origin_count: {{dut.conv1_inst.padding_mase_inst1.x_origin_count.value}}")
-        tb._log.info(f"  convolution_padding_y_origin_count: {{dut.conv1_inst.padding_mase_inst1.y_origin_count.value}}")
-        tb._log.info(f"  convolution_padding_x_padding_count: {{dut.conv1_inst.padding_mase_inst1.x_padding_count.value}}")
-        tb._log.info(f"  convolution_padding_y_padding_count: {{dut.conv1_inst.padding_mase_inst1.y_padding_count.value}}")
-        tb._log.info(f"  convolution_padding_IDLE_State: {{dut.conv1_inst.padding_mase_inst1.IDLE.value}}")
-        tb._log.info(f"  convolution_padding_State1: {{dut.conv1_inst.padding_mase_inst1.state1.value}}")
-        tb._log.info(f"  convolution_padding_State2: {{dut.conv1_inst.padding_mase_inst1.state2.value}}")
-        tb._log.info(f"  convolution_padding_State3: {{dut.conv1_inst.padding_mase_inst1.state3.value}}")
-        tb._log.info(f"  convolution_padding_State4: {{dut.conv1_inst.padding_mase_inst1.state4.value}}")
-        tb._log.info(f"  convolution_padding_data_out_ready: {{dut.conv1_inst.padding_mase_inst1.data_out_ready.value}}")
-        decimal_padding_stored_pixel = bin_to_signed_int(str(dut.conv1_inst.padding_mase_inst1.stored_pixel.value))
-        tb._log.info(f"  convolution_padding_stored_pixel: {{decimal_padding_stored_pixel}}")
+        # tb._log.info(f"  convolution_padding_data_in_valid: {{dut.conv1_inst.padding_mase_inst1.data_in_valid.value}}")
+        # tb._log.info(f"  convolution_padding_data_in_ready: {{dut.conv1_inst.padding_mase_inst1.data_in_ready.value}}")
+        # tb._log.info(f"  convolution_padding_data_out_valid: {{dut.conv1_inst.padding_mase_inst1.data_out_valid.value}}")
+        # tb._log.info(f"  convolution_padding_x_origin_count: {{dut.conv1_inst.padding_mase_inst1.x_origin_count.value}}")
+        # tb._log.info(f"  convolution_padding_y_origin_count: {{dut.conv1_inst.padding_mase_inst1.y_origin_count.value}}")
+        # tb._log.info(f"  convolution_padding_x_padding_count: {{dut.conv1_inst.padding_mase_inst1.x_padding_count.value}}")
+        # tb._log.info(f"  convolution_padding_y_padding_count: {{dut.conv1_inst.padding_mase_inst1.y_padding_count.value}}")
+        # tb._log.info(f"  convolution_padding_IDLE_State: {{dut.conv1_inst.padding_mase_inst1.IDLE.value}}")
+        # tb._log.info(f"  convolution_padding_State1: {{dut.conv1_inst.padding_mase_inst1.state1.value}}")
+        # tb._log.info(f"  convolution_padding_State2: {{dut.conv1_inst.padding_mase_inst1.state2.value}}")
+        # tb._log.info(f"  convolution_padding_State3: {{dut.conv1_inst.padding_mase_inst1.state3.value}}")
+        # tb._log.info(f"  convolution_padding_State4: {{dut.conv1_inst.padding_mase_inst1.state4.value}}")
+        # tb._log.info(f"  convolution_padding_data_out_ready: {{dut.conv1_inst.padding_mase_inst1.data_out_ready.value}}")
+        # decimal_padding_stored_pixel = bin_to_signed_int(str(dut.conv1_inst.padding_mase_inst1.stored_pixel.value))
+        # tb._log.info(f"  convolution_padding_stored_pixel: {{decimal_padding_stored_pixel}}")
 
-        decimal_striding_data_in = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_in.value))
-        tb._log.info(f"  convolution_striding_data_in: {{decimal_striding_data_in}}")
-        decimal_striding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.striding_inst1.result_out.value]
-        tb._log.info(f"  convolution_striding_data_out: {{decimal_striding_data_out}}")
-        decimal_striding_pixel_out = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_count.value))
-        tb._log.info(f"  convolution_striding_pixel_count: {{decimal_striding_pixel_out}}")
-        tb._log.info(f"  convolution_striding_pixel_count_bin: {{dut.conv1_inst.striding_inst1.pixel_count.value}}")
-        tb._log.info(f"  convolution_striding_collect: {{dut.conv1_inst.striding_inst1.collect.value}}")
-        tb._log.info(f"  convolution_striding_output: {{dut.conv1_inst.striding_inst1.output_s.value}}")
-        # tb._log.info(f"  convolution_striding_img: {{dut.conv1_inst.striding_inst1.image_0_0.value}}")
-        # print(dir(dut.conv1_inst.striding_inst1))
-
-
-        # decimal_weight_buffer_ = bin_to_signed_int(str(dut.conv1_inst.weight_buffer_inst..value))
-        decimal_weight_buffer_reading_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.weight_data.value]
-        tb._log.info(f"  convolution_weight_buffer_reading_weight: {{decimal_weight_buffer_reading_weight}}")
-        decimal_weight_buffer_output_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.buffer_out.value]
-        tb._log.info(f"  convolution_weight_buffer_output_weight: {{decimal_weight_buffer_output_weight}}")
-        tb._log.info(f"  convolution_weight_buffer_valid: {{dut.conv1_inst.weight_buffer_inst.buffer_valid.value}}")
+        # decimal_striding_data_in = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_in.value))
+        # tb._log.info(f"  convolution_striding_data_in: {{decimal_striding_data_in}}")
+        # decimal_striding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.striding_inst1.result_out.value]
+        # tb._log.info(f"  convolution_striding_data_out: {{decimal_striding_data_out}}")
+        # decimal_striding_pixel_out = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_count.value))
+        # tb._log.info(f"  convolution_striding_pixel_count: {{decimal_striding_pixel_out}}")
+        # tb._log.info(f"  convolution_striding_pixel_count_bin: {{dut.conv1_inst.striding_inst1.pixel_count.value}}")
+        # tb._log.info(f"  convolution_striding_collect: {{dut.conv1_inst.striding_inst1.collect.value}}")
+        # tb._log.info(f"  convolution_striding_output: {{dut.conv1_inst.striding_inst1.output_s.value}}")
+        # # tb._log.info(f"  convolution_striding_img: {{dut.conv1_inst.striding_inst1.image_0_0.value}}")
+        # # print(dir(dut.conv1_inst.striding_inst1))
 
 
+        # # decimal_weight_buffer_ = bin_to_signed_int(str(dut.conv1_inst.weight_buffer_inst..value))
+        # decimal_weight_buffer_reading_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.weight_data.value]
+        # tb._log.info(f"  convolution_weight_buffer_reading_weight: {{decimal_weight_buffer_reading_weight}}")
+        # decimal_weight_buffer_output_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.buffer_out.value]
+        # tb._log.info(f"  convolution_weight_buffer_output_weight: {{decimal_weight_buffer_output_weight}}")
+        # tb._log.info(f"  convolution_weight_buffer_valid: {{dut.conv1_inst.weight_buffer_inst.buffer_valid.value}}")
 
-        tb._log.info(f"  convolution_dp_acc_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_valid.value}}")
-        tb._log.info(f"  convolution_dp_acc_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_ready.value}}")
-        tb._log.info(f"  convolution_dp_acc_weight_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.weight_valid.value}}")
-        tb._log.info(f"  convolution_dp_acc_weight_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.weight_ready.value}}")
-        tb._log.info(f"  convolution_dp_acc_data_out_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0_valid.value}}")
-        tb._log.info(f"  convolution_dp_acc_data_out_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0_ready.value}}")
-        decimal_dp_acc_middle_result = bin_to_signed_int(str(dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out.value))
-        tb._log.info(f"  convolution_dp_acc_out_middle_result: {{decimal_dp_acc_middle_result}}")
-        tb._log.info(f"  convolution_dp_acc_out_middle_result: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out.value}}")
-        decimal_dp_acc_data_out = bin_to_signed_int(str(dut.conv1_inst.dp_acc_mase_inst.data_out_0.value))
-        tb._log.info(f"  convolution_dp_acc_out_data_out: {{decimal_dp_acc_data_out}}")
 
-        decimal_dp_acc_fixed_dot_product_current_input_data = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in.value]
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_product_current_input_data: {{decimal_dp_acc_fixed_dot_product_current_input_data}}")
-        decimal_dp_acc_fixed_dot_product_current_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight.value]
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_product_current_weight: {{decimal_dp_acc_fixed_dot_product_current_weight}}")
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in_valid.value}}")
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in_ready.value}}")
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_weight_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight_valid.value}}")
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_weight_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight_ready.value}}")
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_out_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out_valid.value}}")
-        tb._log.info(f"  convolution_dp_acc_fixed_dot_data_out_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out_ready.value}}")
+        decimal_conv_arith_current_input_data= [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.conv_arith_inst.data_in.value]
+        tb._log.info(f"  convolution_conv_arith_current_input_data: {{decimal_conv_arith_current_input_data}}")
+        decimal_conv_arith_current_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.conv_arith_inst.weight_data.value]
+        tb._log.info(f"  convolution_arith_current_weight: {{decimal_conv_arith_current_weight}}")
+        tb._log.info(f"  convolution_conv_arith_in_valid: {{dut.conv1_inst.conv_arith_inst.data_in_valid.value}}")
+        tb._log.info(f"  convolution_conv_arith_data_in_ready: {{dut.conv1_inst.conv_arith_inst.data_in_ready.value}}")
+        tb._log.info(f"  convolution_conv_arith_weight_in_valid: {{dut.conv1_inst.conv_arith_inst.weight_valid.value}}")
+        tb._log.info(f"  convolution_conv_arith_weight_in_ready: {{dut.conv1_inst.conv_arith_inst.weight_ready.value}}")
+        tb._log.info(f"  convolution_conv_arith_data_out_valid: {{dut.conv1_inst.conv_arith_inst.arith_valid.value}}")
+        tb._log.info(f"  convolution_conv_arith_data_out_ready: {{dut.conv1_inst.conv_arith_inst.arith_ready.value}}")
+        tb._log.info(f"  convolution_conv_arith_data_out: {{dut.conv1_inst.conv_arith_inst.arith_data_out.value}}")
+        decimal_conv_arith_data_out = bin_to_signed_int(str(dut.conv1_inst.conv_arith_inst.arith_data_out.value))
+        tb._log.info(f"  convolution_conv_arith_data_out: {{decimal_conv_arith_data_out}}")
+
+        decimal_conv_arith_accumulator = bin_to_signed_int(str(dut.conv1_inst.conv_arith_inst.accumulator.value))
+        tb._log.info(f"  convolution_conv_arith_accumulator: {{decimal_conv_arith_accumulator}}")
+
+        tb._log.info(f"  convolution_conv_arith_counter: {{dut.conv1_inst.conv_arith_inst.counter.value}}")
+
+
+        decimal_rounding_in = bin_to_signed_int(str(dut.conv1_inst.fr_inst.in_data.value))
+        tb._log.info(f"  convolution_decimal_rounding_in: {{decimal_rounding_in}}")
+        tb._log.info(f"  convolution_decimal_rounding_in: {{dut.conv1_inst.fr_inst.in_data.value}}")
+        decimal_rounding_out = bin_to_signed_int(str(dut.conv1_inst.fr_inst.out_data.value))
+        tb._log.info(f"  convolution_decimal_rounding_out: {{decimal_rounding_out}}")
+        tb._log.info(f"  convolution_decimal_rounding_out: {{dut.conv1_inst.fr_inst.out_data.value}}")
+
+
+
+        # tb._log.info(f"  convolution_dp_acc_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_valid.value}}")
+        # tb._log.info(f"  convolution_dp_acc_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_ready.value}}")
+        # tb._log.info(f"  convolution_dp_acc_weight_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.weight_valid.value}}")
+        # tb._log.info(f"  convolution_dp_acc_weight_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.weight_ready.value}}")
+        # tb._log.info(f"  convolution_dp_acc_data_out_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0_valid.value}}")
+        # tb._log.info(f"  convolution_dp_acc_data_out_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0_ready.value}}")
+        # decimal_dp_acc_middle_result = bin_to_signed_int(str(dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out.value))
+        # tb._log.info(f"  convolution_dp_acc_out_middle_result: {{decimal_dp_acc_middle_result}}")
+        # tb._log.info(f"  convolution_dp_acc_out_middle_result: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out.value}}")
+        # decimal_dp_acc_data_out = bin_to_signed_int(str(dut.conv1_inst.dp_acc_mase_inst.data_out_0.value))
+        # tb._log.info(f"  convolution_dp_acc_out_data_out: {{decimal_dp_acc_data_out}}")
+        # tb._log.info(f"  convolution_dp_acc_out_data_out: {{dut.conv1_inst.dp_acc_mase_inst.data_out_0.value}}")
+
+        # decimal_dp_acc_fixed_dot_product_current_input_data = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in.value]
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_product_current_input_data: {{decimal_dp_acc_fixed_dot_product_current_input_data}}")
+        # decimal_dp_acc_fixed_dot_product_current_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight.value]
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_product_current_weight: {{decimal_dp_acc_fixed_dot_product_current_weight}}")
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in_valid.value}}")
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_in_ready.value}}")
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_weight_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight_valid.value}}")
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_weight_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.weight_ready.value}}")
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_data_out_valid: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out_valid.value}}")
+        # tb._log.info(f"  convolution_dp_acc_fixed_dot_data_out_ready: {{dut.conv1_inst.dp_acc_mase_inst.dot_product_inst.data_out_ready.value}}")
+
+        # decimal_rounding_out = bin_to_signed_int(str(dut.conv1_inst.fr_inst.out_data.value))
+        # tb._log.info(f"  convolution_decimal_rounding_out: {{decimal_rounding_out}}")
+
+
 
 
         # tb._log.info(f"  padding_data_in: {{dut.conv1_inst.sw_inst.padding_inst.data_in.value}}")
