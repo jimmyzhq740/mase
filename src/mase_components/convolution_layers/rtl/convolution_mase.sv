@@ -273,7 +273,6 @@ module convolution_mase #(
   );
 
   logic [ARITH_DATA_OUT_WIDTH-1:0] arith_data_out;
-  logic arith_valid = 'b1;
   conv_arith_mase #(
       .DATA_IN_0_PRECISION_0(DATA_IN_0_PRECISION_0),
       .WEIGHT_PRECISION_0(WEIGHT_PRECISION_0),
@@ -283,7 +282,7 @@ module convolution_mase #(
       .clk(clk),
       .rst(rst),
       .weight_valid(buffer_valid),  // top gives to here
-      .weight_ready(weight_ready),  // gives to weight_source module to send data
+      .weight_ready(weight_math_ready),  // gives to weight_source module to send data
       .weight_data(buffer_weight_out),
       .data_in_valid(striding_data_out_valid),
       .data_in_ready(conv_arith_ready),

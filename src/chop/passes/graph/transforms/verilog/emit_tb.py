@@ -74,7 +74,7 @@ async def test(dut):
 
     # Monitor DUT during execution
     for cycle in range(500):  # Observe for 50 cycles
-        await Timer(10, units="ns")  # Adjust timing based on design
+        await Timer(20, units="ns")  # Adjust timing based on design
         tb._log.info(f"Cycle {{cycle+1}}:")
         # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
         # tb._log.info(f"  Layer1 Output: {{dut.conv1_data_out_0.value}}")
@@ -139,6 +139,16 @@ async def test(dut):
         # decimal_weight_buffer_output_weight = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.buffer_out.value]
         # tb._log.info(f"  convolution_weight_buffer_output_weight: {{decimal_weight_buffer_output_weight}}")
         # tb._log.info(f"  convolution_weight_buffer_valid: {{dut.conv1_inst.weight_buffer_inst.buffer_valid.value}}")
+
+        weight_source = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.weight_data.value]
+        tb._log.info(f"  weight_source: {{weight_source}}")
+        tb._log.info(f"  weight_ready: {{dut.conv1_inst.weight_buffer_inst.weight_ready.value}}")
+        tb._log.info(f"  weight_valid: {{dut.conv1_inst.weight_buffer_inst.weight_valid.value}}")
+
+        buffer_weight_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.weight_buffer_inst.buffer_out.value]
+        tb._log.info(f"  buffer_weight_out: {{buffer_weight_out}}")
+        tb._log.info(f"  buffer_weight_ready: {{dut.conv1_inst.weight_buffer_inst.buffer_ready.value}}")
+        tb._log.info(f"  buffer_weight_valid: {{dut.conv1_inst.weight_buffer_inst.buffer_valid.value}}")
 
 
         decimal_conv_arith_current_input_data= [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.conv_arith_inst.data_in.value]
