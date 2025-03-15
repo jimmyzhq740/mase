@@ -91,13 +91,12 @@ module striding #(
       for (i = 0; i < KERNEL_X * KERNEL_Y; i = i + 1) window_reg[i] <= 0;
     end else begin
       // Default: deassert valid output.
-      assign sliding_window_valid = 0;
+      sliding_window_valid_reg <= 0;
 
       case (state)
         COLLECT: begin
           collect  = 1;
           output_s = 0;
-
           //pixel_valid_reg <= pixel_in_valid;
           //
           if (pixel_in_valid) begin
@@ -138,9 +137,8 @@ module striding #(
                 // $display(" what is value: ", window_reg[i*KERNEL_X+j]);
               end
             end
-            assign sliding_window_valid = 1;
             // Pulse valid for one clock cycle.
-            //sliding_window_valid_reg <= 1;
+            assign sliding_window_valid = 1;
             window_count <= window_count + 1;
             // Update window pointer:
             if (win_col < (COLS - KERNEL_X)) win_col <= win_col + 1;

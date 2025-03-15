@@ -187,6 +187,7 @@ module padding_mase #(
         // current state IDLE=1
         IDLE = 'd1;
         data_in_ready = 1;  // We can accept a pixel
+        data_out_valid = 0;
         if (!data_out_ready) begin
           next_state = S_IDLE;
         end else begin
@@ -206,7 +207,7 @@ module padding_mase #(
         data_out_valid = 1;  // We have a new output pixel every clock
         assign data_in_ready = 0;  // cannot let the reshape to send the signal
         assign state1 = 'd1;
-        assign data_out_valid = 1;
+
 
         if (data_out_valid && !data_out_ready) begin
           // Stall here

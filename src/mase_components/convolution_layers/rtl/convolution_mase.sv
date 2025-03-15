@@ -267,7 +267,7 @@ module convolution_mase #(
   );
 
 
-  logic arith_ready = 'b1;
+  logic arith_ready;
   localparam ARITH_DATA_OUT_WIDTH = DATA_IN_0_PRECISION_0 + WEIGHT_PRECISION_0 + $clog2(
       WEIGHT_TENSOR_SIZE_DIM_0 * WEIGHT_TENSOR_SIZE_DIM_1
   );
@@ -307,115 +307,27 @@ module convolution_mase #(
       KERNEL_X * KERNEL_Y * IN_C
   );
   localparam ROUND_PRECISION_1 = DATA_IN_0_PRECISION_1 + WEIGHT_PRECISION_1;
-  //   small_convolution_arith #(
-  //       // assume output will only unroll_out_channels
-  //       .DATA_IN_0_PRECISION_0(DATA_IN_0_PRECISION_0),
-  //       .DATA_IN_0_PRECISION_1(DATA_IN_0_PRECISION_1),
-  //       .WEIGHT_PRECISION_0(WEIGHT_PRECISION_0),
-  //       .WEIGHT_PRECISION_1(WEIGHT_PRECISION_1),
-  //       .BIAS_PRECISION_0(BIAS_PRECISION_0),
-  //       .BIAS_PRECISION_1(BIAS_PRECISION_1),
-  //       .ROLL_IN_NUM(ROLL_IN_NUM),
-  //       .ROLL_OUT_NUM(UNROLL_KERNEL_OUT),
-  //       .IN_CHANNELS_DEPTH(DATA_IN_0_TENSOR_SIZE_DIM_3),
-  //       .OUT_CHANNELS_PARALLELISM(DATA_OUT_0_PARALLELISM_DIM_2),
-  //       //   .OUT_CHANNELS_DEPTH(OUT_C / UNROLL_OUT_C),
-  //       .HAS_BIAS(HAS_BIAS)
-  //   ) simple_convolution_arith_inst1 (
-  //       .data_in_0(striding_data_out),
-  //       .data_in_0_valid(striding_data_out_valid),
-  //       .data_in_0_ready(conv_arith_ready),  //striding gives to here
-  //       .data_out_0(round_in),
-  //       .weight(buffer_weight_out),
-  //       .weight_ready(arith_ready),
-  //       .weight_valid(buffer_valid),
-  //       .*
-  //   );
+  logic arith_valid;
 
-  //   assign arith_ready = 'b1;
+  logic [DATA_IN_0_PRECISION_0-1:0] fixed_rounding_out;
 
+  logic [DATA_IN_0_PRECISION_0-1:0] out_buffer_out [DATA_IN_0_PARALLELISM_DIM_0*DATA_IN_0_PARALLELISM_DIM_1-1:0];
+  out_buffer #(
+      .DATA_WIDTH(DATA_IN_0_PRECISION_0),
+      .DATA_IN_0_PARALLELISM_DIM_0(DATA_IN_0_PARALLELISM_DIM_1),
+      .DATA_IN_0_PARALLELISM_DIM_1((DATA_IN_0_PARALLELISM_DIM_1))
+  ) out_buffer_inst (
+      .clk(clk),
+      .rst_n(rst),
+      .data_in(fixed_rounding_out),
+      .data_in_valid(arith_valid),
+      .data_in_ready(arith_ready),
+      .data_out(data_out_0),
+      .data_out_valid(buffer_data_out_valid),
+      .data_out_ready(buffer_data_out_ready)
+  );
+  logic buffer_data_out_valid;
+  logic buffer_data_out_ready = 'b1;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  // Since I have packed_kernel
-  // I unpacked the kernel, ie. for each array of packed_kernel that contains
-  // all pixels of all unroll_in_c channels at that x,y position,
-  // I dismantle it and puts each pixel for different channel as single element in kernel array
-  /* verilator lint_on PINMISSING */
-  //   for (genvar i = 0; i < KERNEL_Y * KERNEL_X; i++)
-  //   for (genvar j = 0; j < UNROLL_IN_C; j++)
-  //   for (genvar k = 0; k < DATA_IN_0_PRECISION_0; k++)
-  //     assign kernel[i*UNROLL_IN_C+j][k] = packed_kernel[i][j*DATA_IN_0_PRECISION_0+k];
-
-  //   //  Tells the roller how many of these pixels (and their corresponding weights)
-  //   //  to send to the arith each clock. This is why rolled_k is array of [UNROLL_KERNEL_OUT-1:0],
-  //   //  as it sends these num of arrays for matrix at one time.
-  //   roller #(
-  //       .DATA_WIDTH(DATA_IN_0_PRECISION_0),
-  //       .NUM(ROLL_IN_NUM),
-  //       .ROLL_NUM(UNROLL_KERNEL_OUT)
-  //   ) roller_inst (
-  //       .data_in(kernel),
-  //       .data_in_valid(kernel_valid),
-  //       .data_in_ready(kernel_ready),
-  //       .data_out(rolled_k),
-  //       .data_out_valid(rolled_k_valid),
-  //       .data_out_ready(rolled_k_ready),
-  //       .*
-  //   );
-
-  //   convolution_arith #(
-  //       // assume output will only unroll_out_channels
-  //       .DATA_IN_0_PRECISION_0(DATA_IN_0_PRECISION_0),
-  //       .DATA_IN_0_PRECISION_1(DATA_IN_0_PRECISION_1),
-  //       .WEIGHT_PRECISION_0(WEIGHT_PRECISION_0),
-  //       .WEIGHT_PRECISION_1(WEIGHT_PRECISION_1),
-  //       .BIAS_PRECISION_0(BIAS_PRECISION_0),
-  //       .BIAS_PRECISION_1(BIAS_PRECISION_1),
-  //       .ROLL_IN_NUM(ROLL_IN_NUM),
-  //       .ROLL_OUT_NUM(UNROLL_KERNEL_OUT),
-  //       .IN_CHANNELS_DEPTH(IN_C / UNROLL_IN_C),
-  //       .OUT_CHANNELS_PARALLELISM(UNROLL_OUT_C),
-  //       .OUT_CHANNELS_DEPTH(OUT_C / UNROLL_OUT_C),
-  //       .WEIGHT_REPEATS(SLIDING_NUM),
-  //       .HAS_BIAS(HAS_BIAS)
-  //   ) convolution_arith_inst (
-  //       .data_in_0(rolled_k),
-  //       .data_in_0_valid(rolled_k_valid),
-  //       .data_in_0_ready(rolled_k_ready),
-  //       .data_out_0(round_in),
-  //       .weight(internal_weight)
-  //   );
-
-  //   fixed_rounding #(
-  //       .IN_SIZE(UNROLL_OUT_C),
-  //       .IN_WIDTH(ROUND_PRECISION_0),
-  //       .IN_FRAC_WIDTH(ROUND_PRECISION_1),
-  //       .OUT_WIDTH(DATA_OUT_0_PRECISION_0),
-  //       .OUT_FRAC_WIDTH(DATA_OUT_0_PRECISION_1)
-  //   ) round_inst (
-  //       .data_in (round_in),
-  //       .data_out(internal_data_out_0)
-  //   );
-
+  //   assign data_out_0 = out_buffer_out;
 endmodule

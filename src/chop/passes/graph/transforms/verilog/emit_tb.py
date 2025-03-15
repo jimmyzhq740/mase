@@ -179,6 +179,19 @@ async def test(dut):
         tb._log.info(f"  convolution_decimal_rounding_out: {{dut.conv1_inst.fr_inst.out_data.value}}")
 
 
+        decimal_out_buffer_data_in = bin_to_signed_int(str(dut.conv1_inst.out_buffer_inst.data_in.value))
+        tb._log.info(f"  convolution_out_buffer_in: {{decimal_out_buffer_data_in}}")
+        decimal_out_buffer_data_out= [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.out_buffer_inst.data_out.value]
+        tb._log.info(f"  convolution_out_buffer_out: {{decimal_out_buffer_data_out}}")
+        tb._log.info(f"  convolution_out_buffer_data_in_valid: {{dut.conv1_inst.out_buffer_inst.data_in_valid.value}}")
+        tb._log.info(f"  convolution_out_buffer_data_in_ready: {{dut.conv1_inst.out_buffer_inst.data_in_ready.value}}")
+        tb._log.info(f"  convolution_out_buffer_data_out_valid: {{dut.conv1_inst.out_buffer_inst.data_out_valid.value}}")
+        tb._log.info(f"  convolution_out_buffer_col_counter: {{dut.conv1_inst.out_buffer_inst.col_counter_w.value}}")
+        tb._log.info(f"  convolution_out_buffer_row_counter: {{dut.conv1_inst.out_buffer_inst.row_counter_w.value}}")
+        tb._log.info(f"  convolution_out_buffer_valid_count: {{dut.conv1_inst.out_buffer_inst.valid_count.value}}")
+        tb._log.info(f"  convolution_out_buffer_ready_count: {{dut.conv1_inst.out_buffer_inst.ready_count.value}}")
+
+
 
         # tb._log.info(f"  convolution_dp_acc_data_in_valid: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_valid.value}}")
         # tb._log.info(f"  convolution_dp_acc_data_in_ready: {{dut.conv1_inst.dp_acc_mase_inst.data_in_0_ready.value}}")
