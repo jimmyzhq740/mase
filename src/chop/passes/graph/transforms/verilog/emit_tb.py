@@ -119,6 +119,8 @@ async def test(dut):
         # tb._log.info(f"  convolution_padding_data_out_ready: {{dut.conv1_inst.padding_mase_inst1.data_out_ready.value}}")
         # decimal_padding_stored_pixel = bin_to_signed_int(str(dut.conv1_inst.padding_mase_inst1.stored_pixel.value))
         # tb._log.info(f"  convolution_padding_stored_pixel: {{decimal_padding_stored_pixel}}")
+        tb._log.info(f"  convolution_padding_data_out_valid: {{dut.conv1_inst.padding_mase_inst1.data_out_valid.value}}")
+        tb._log.info(f"  convolution_padding_data_out_ready: {{dut.conv1_inst.padding_mase_inst1.data_out_ready.value}}")
 
         # decimal_striding_data_in = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_in.value))
         # tb._log.info(f"  convolution_striding_data_in: {{decimal_striding_data_in}}")

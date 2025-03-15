@@ -241,6 +241,7 @@ module convolution_mase #(
       .pixel_in_ready(striding_ready),
       .result_out(striding_data_out),
       .sliding_window_valid(striding_data_out_valid),
+
       .sliding_window_ready(conv_arith_ready)
   );
 
@@ -264,6 +265,7 @@ module convolution_mase #(
       .buffer_valid(buffer_valid),
       .buffer_ready(weight_math_ready),
       .buffer_out(buffer_weight_out)
+
   );
 
 

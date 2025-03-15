@@ -98,7 +98,7 @@ module striding #(
           collect  = 1;
           output_s = 0;
           //pixel_valid_reg <= pixel_in_valid;
-          //
+          assign sliding_window_valid = 0;
           if (pixel_in_valid) begin
             // image [0][0]=0; image [0][1]=0; image[0][2]=0; image[0][3]=0; image[0][4]=0; image[0][5]=0;
             // image [1][0]=0; image [1][1]=1; image[1][2]=2; image[1][3]=3; image[1][4]=4; image[1][5]=0;
@@ -153,9 +153,17 @@ module striding #(
               if (win_row < (ROWS - KERNEL_Y)) win_row <= win_row + 1;
               else win_row <= win_row;  // remain if finished
             end
+            state <= OUTPUT;
+          end  // Remain in OUTPUT state.
+          else begin
+            if (window_count == TOTAL_WINDOWS && sliding_window_ready == 1) begin
+              state <= COLLECT;
+              pixel_count <= 0;
+              window_count <= 0;
+              win_row <= 0;
+              win_col <= 0;
+            end
           end
-          // Remain in OUTPUT state.
-          state <= OUTPUT;
         end
 
         default: state <= COLLECT;
