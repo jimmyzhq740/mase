@@ -97,10 +97,8 @@ module convolution_mase #(
 
 
     parameter SLIDING_NUM = 8,
-
     parameter BIAS_SIZE = UNROLL_OUT_C,
     parameter STRIDE    = 1,
-
     parameter PADDING_Y = 1,
     parameter PADDING_X = 2
 
@@ -135,14 +133,26 @@ module convolution_mase #(
   // Define internal logic for unroll data
   logic [DATA_IN_0_PRECISION_0 - 1:0] sliding_data_in_0[UNROLL_IN_C - 1 : 0];
   logic [DATA_IN_0_PRECISION_0 * UNROLL_IN_C - 1:0] packed_data_in;
+<<<<<<< HEAD
+=======
+
+
+  // Tells how many input data it needs to process for unroll number of channels when it passes into roller
+  // e.g. when weight (2,2,3,3), unroll_IN_C=2 (process two input channels in parallel), it means
+  // the data it needs is 3x3x2=18
+  localparam ROLL_IN_NUM = KERNEL_Y * KERNEL_X * UNROLL_IN_C;
+>>>>>>> c4b90d43 (changed CNN again)
 
 
   for (genvar i = 0; i < UNROLL_IN_C; i++)
   for (genvar j = 0; j < DATA_IN_0_PRECISION_0; j++)
     assign packed_data_in[i*DATA_IN_0_PRECISION_0+j] = sliding_data_in_0[i][j];
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> c4b90d43 (changed CNN again)
   data_in_reshaper #(
       .DATA_WIDTH     (DATA_IN_0_PRECISION_0),        // Data width
       .IMG_WIDTH      (DATA_IN_0_TENSOR_SIZE_DIM_0),  // Image width
@@ -286,9 +296,7 @@ module convolution_mase #(
   );
   localparam ROUND_PRECISION_1 = DATA_IN_0_PRECISION_1 + WEIGHT_PRECISION_1;
   logic arith_valid;
-
   logic [DATA_IN_0_PRECISION_0-1:0] fixed_rounding_out;
-
   logic [DATA_IN_0_PRECISION_0-1:0] out_buffer_out [DATA_IN_0_PARALLELISM_DIM_0*DATA_IN_0_PARALLELISM_DIM_1-1:0];
   out_buffer #(
       .DATA_WIDTH(DATA_IN_0_PRECISION_0),
