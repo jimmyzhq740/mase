@@ -133,39 +133,14 @@ module convolution_mase #(
 
 
   // Define internal logic for unroll data
-  logic [ DATA_IN_0_PRECISION_0 - 1:0] sliding_data_in_0  [                  UNROLL_IN_C - 1 : 0];
-  logic [      WEIGHT_PRECISION_0-1:0] internal_weight    [UNROLL_KERNEL_OUT * UNROLL_OUT_C -1:0];
-  logic [        BIAS_PRECISION_0-1:0] internal_bias      [                        BIAS_SIZE-1:0];
-  logic [DATA_OUT_0_PRECISION_0 - 1:0] internal_data_out_0[                   UNROLL_OUT_C - 1:0];
-
-  localparam UNCAST_OUT_WIDTH = DATA_IN_0_PRECISION_0 + WEIGHT_PRECISION_0 + $clog2(
-      KERNEL_Y * KERNEL_X * IN_C
-  ) + 1;
-  localparam UNCAST_OUT_FRAC_WIDTH = DATA_IN_0_PRECISION_1 + WEIGHT_PRECISION_1;
+  logic [DATA_IN_0_PRECISION_0 - 1:0] sliding_data_in_0[UNROLL_IN_C - 1 : 0];
   logic [DATA_IN_0_PRECISION_0 * UNROLL_IN_C - 1:0] packed_data_in;
-  logic [UNCAST_OUT_WIDTH - 1:0] uncast_data_out[UNROLL_OUT_C - 1:0];
-
-  // Tells how many input data it needs to process for unroll number of channels when it passes into roller
-  // e.g. when weight (2,2,3,3), unroll_IN_C=2 (process two input channels in parallel), it means
-  // the data it needs is 3x3x2=18
-  localparam ROLL_IN_NUM = KERNEL_Y * KERNEL_X * UNROLL_IN_C;
 
 
-  logic [DATA_IN_0_PRECISION_0 - 1:0] rolled_k[UNROLL_KERNEL_OUT - 1:0];
-  logic rolled_k_valid;
-  logic rolled_k_ready;
   for (genvar i = 0; i < UNROLL_IN_C; i++)
   for (genvar j = 0; j < DATA_IN_0_PRECISION_0; j++)
     assign packed_data_in[i*DATA_IN_0_PRECISION_0+j] = sliding_data_in_0[i][j];
 
-  logic [DATA_IN_0_PRECISION_0 * UNROLL_IN_C - 1:0] packed_kernel[KERNEL_Y * KERNEL_X - 1:0];
-  // in the array packed_kernel whose size is defined by filter size
-  // each element in the array packed_kernel[i] stores UNROLL_IN_C channels worth of data:
-  // packed_kernel[i] = { channel_data[UNROLL_IN_C-1], ..., channel_data[1], channel_data[0] }
-  // the size of each packed_kernel[i] tells the total number of bits for unroll_in_c number of pixels
-  logic [DATA_IN_0_PRECISION_0 - 1:0] kernel[KERNEL_Y * KERNEL_X * UNROLL_IN_C - 1:0];
-  logic kernel_valid;
-  logic kernel_ready;
 
 
   data_in_reshaper #(
@@ -307,7 +282,7 @@ module convolution_mase #(
   );
 
   localparam ROUND_PRECISION_0 = DATA_IN_0_PRECISION_0 + WEIGHT_PRECISION_0 + $clog2(
-      KERNEL_X * KERNEL_Y * IN_C
+      WEIGHT_TENSOR_SIZE_DIM_0 * WEIGHT_TENSOR_SIZE_DIM_1 * IN_C
   );
   localparam ROUND_PRECISION_1 = DATA_IN_0_PRECISION_1 + WEIGHT_PRECISION_1;
   logic arith_valid;
