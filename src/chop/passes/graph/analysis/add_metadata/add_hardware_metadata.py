@@ -96,8 +96,8 @@ def add_verilog_param(node):
     vp = node.meta["mase"]["hardware"]["verilog_param"]
     print ('vp: ', vp)
     for arg, arg_info in args.items():
-        # print("arg: ",args)
-        # print ("arg_info in add_verilog_param: ",arg_info)
+        print("arg: ",args)
+        print ("arg_info in add_verilog_param: ",arg_info)
         # print ("arg_info shape:", arg_info["shape"] )
         # print ("length of arg_info:", len(arg_info["shape"]))
         if isinstance(arg_info, dict):
@@ -124,14 +124,14 @@ def add_verilog_param(node):
                         dim
                     ]
             print ("arg in add_verilog_param:", arg)
-        #To generate stride and padding parameter for sv file:
-        elif type(arg_info) == tuple:
-            for dim in range (0, len(arg_info)):
-                vp[_cap(arg + f"_tensor_size_dim_{dim}_value")]= (
-                    arg_info[len(arg_info) - 1 - dim]
-                    if dim < len(arg_info)
-                    else 1
-                )
+        # #To generate stride and padding parameter for sv file:
+        # elif type(arg_info) == tuple:
+        #     for dim in range (0, len(arg_info)):
+        #         vp[_cap(arg + f"_tensor_size_dim_{dim}_value")]= (
+        #             arg_info[len(arg_info) - 1 - dim]
+        #             if dim < len(arg_info)
+        #             else 1
+        #         )
 
         elif type(arg_info) == bool:
             vp[_cap(arg)] = 1 if arg_info else 0
@@ -197,6 +197,27 @@ def add_extra_verilog_param(node, graph: MaseGraph):
             vp["O_PROJECTION_WEIGHT_PARALLELISM_DIM_1"] = vp[
                 "O_PROJECTION_WEIGHT_PARALLELISM_DIM_0"
             ]
+        elif isinstance(module, nn.Conv2d):
+            vp["HAS_BIAS"] = 1 if module.bias else 0
+            #To generate stride and padding parameter for sv file:
+            if hasattr (module,"stride"):
+                print ("module.stride: ",module.stride)
+                stride_info = module.stride
+                for dim in range(0, len(stride_info)):
+                    vp[_cap("stride" + f"_tensor_size_dim_{dim}_value")]= (
+                               stride_info[len(stride_info) - 1 - dim]
+                                if dim < len(stride_info)
+                                else 1
+                            )
+            if hasattr (module,"padding"):
+                print ("module.padding: ",module.padding)
+                padding_info = module.padding
+                for dim in range(0, len(stride_info)):
+                    vp[_cap("padding" + f"_tensor_size_dim_{dim}_value")]= (
+                               padding_info[len(padding_info) - 1 - dim]
+                                if dim < len(padding_info)
+                                else 1
+                            )
 
 
 def add_hardware_metadata_analysis_pass(graph, pass_args={}):
