@@ -191,10 +191,10 @@ async def test(dut):
         tb._log.info(f"  convolution_out_buffer_data_in_valid: {{dut.conv1_inst.out_buffer_inst.data_in_valid.value}}")
         tb._log.info(f"  convolution_out_buffer_data_in_ready: {{dut.conv1_inst.out_buffer_inst.data_in_ready.value}}")
         tb._log.info(f"  convolution_out_buffer_data_out_valid: {{dut.conv1_inst.out_buffer_inst.data_out_valid.value}}")
-        tb._log.info(f"  convolution_out_buffer_col_counter: {{dut.conv1_inst.out_buffer_inst.col_counter_w.value}}")
-        tb._log.info(f"  convolution_out_buffer_row_counter: {{dut.conv1_inst.out_buffer_inst.row_counter_w.value}}")
-        tb._log.info(f"  convolution_out_buffer_valid_count: {{dut.conv1_inst.out_buffer_inst.valid_count.value}}")
-        tb._log.info(f"  convolution_out_buffer_ready_count: {{dut.conv1_inst.out_buffer_inst.ready_count.value}}")
+        tb._log.info(f"  convolution_out_buffer_col_counter: {{dut.conv1_inst.out_buffer_inst.col_cnt.value}}")
+        tb._log.info(f"  convolution_out_buffer_row_counter: {{dut.conv1_inst.out_buffer_inst.row_cnt.value}}")
+        # tb._log.info(f"  convolution_out_buffer_valid_count: {{dut.conv1_inst.out_buffer_inst.valid_count.value}}")
+        # tb._log.info(f"  convolution_out_buffer_ready_count: {{dut.conv1_inst.out_buffer_inst.ready_count.value}}")
 
 
 

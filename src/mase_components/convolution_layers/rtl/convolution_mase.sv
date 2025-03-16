@@ -294,7 +294,9 @@ module convolution_mase #(
   out_buffer #(
       .DATA_WIDTH(DATA_IN_0_PRECISION_0),
       .DATA_IN_0_PARALLELISM_DIM_0(DATA_IN_0_PARALLELISM_DIM_1),
-      .DATA_IN_0_PARALLELISM_DIM_1((DATA_IN_0_PARALLELISM_DIM_1))
+      .DATA_IN_0_PARALLELISM_DIM_1((DATA_IN_0_PARALLELISM_DIM_1)),
+      .DATA_IN_0_TENSOR_SIZE_DIM_0(DATA_IN_0_TENSOR_SIZE_DIM_0),
+      .DATA_IN_0_TENSOR_SIZE_DIM_1(DATA_IN_0_TENSOR_SIZE_DIM_1)
   ) out_buffer_inst (
       .clk(clk),
       .rst_n(rst),
