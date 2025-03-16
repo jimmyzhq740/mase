@@ -313,4 +313,16 @@ INTERNAL_COMP = {
             ],
         }
     ],
+
+    # maxpool_2d
+    "max_pool2d":  [
+        {
+            "name": "max_pooling_2d",
+            "dependence_files": [
+                "memory/rtl/fifo.sv",
+                "pooling_layers/rtl/max_pooling_2d.sv",
+                "pooling_layers/rtl/pool_window.sv",
+            ],
+        }
+    ],
 }

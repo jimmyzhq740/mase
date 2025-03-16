@@ -323,11 +323,7 @@ module convolution_mase #(
       .data_in_valid(arith_valid),
       .data_in_ready(arith_ready),
       .data_out(data_out_0),
-      .data_out_valid(buffer_data_out_valid),
-      .data_out_ready(buffer_data_out_ready)
+      .data_out_valid(data_out_0_valid),
+      .data_out_ready(data_out_0_ready)
   );
-  logic buffer_data_out_valid;
-  logic buffer_data_out_ready = 'b1;
-
-  //   assign data_out_0 = out_buffer_out;
 endmodule

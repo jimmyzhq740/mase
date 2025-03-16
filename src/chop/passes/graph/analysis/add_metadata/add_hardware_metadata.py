@@ -96,7 +96,7 @@ def add_verilog_param(node):
     vp = node.meta["mase"]["hardware"]["verilog_param"]
     print ('vp: ', vp)
     for arg, arg_info in args.items():
-        # print("arg: ",args)
+        # print ("arg: ",args)
         # print ("arg_info in add_verilog_param: ",arg_info)
         # print ("arg_info shape:", arg_info["shape"] )
         # print ("length of arg_info:", len(arg_info["shape"]))
@@ -197,6 +197,24 @@ def add_extra_verilog_param(node, graph: MaseGraph):
             vp["O_PROJECTION_WEIGHT_PARALLELISM_DIM_1"] = vp[
                 "O_PROJECTION_WEIGHT_PARALLELISM_DIM_0"
             ]
+        # update para in maxpooling
+        elif isinstance(module, nn.MaxPool2d):
+            vp.update({
+                "DATA_IN_0_PRECISION_0": 8,
+                "DATA_IN_0_PRECISION_1": 5,
+                "DATA_OUT_0_PRECISION_0": 8,
+                "DATA_OUT_0_PRECISION_1": 5,
+                "WIDTH": 4,
+                "HEIGHT": 4,
+                "POOL_SIZE": 2,
+                "DATA_IN_0_PARALLELISM_DIM_0": 2,
+                "DATA_IN_0_PARALLELISM_DIM_1": 2,
+                "DATA_OUT_0_PARALLELISM_DIM_0": 2,
+                "DATA_OUT_0_PARALLELISM_DIM_1": 2,
+                "FIFO_DEPTH": 4,
+                "FIFO_DEPTH": 4,
+                "FIFO_DEPTH": 4,
+            })
 
 
 def add_hardware_metadata_analysis_pass(graph, pass_args={}):

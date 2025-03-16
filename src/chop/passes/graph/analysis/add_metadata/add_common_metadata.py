@@ -91,8 +91,8 @@ def graph_iterator_for_mase_ops(graph):
                 mase_op = "softsign"
             elif isinstance(module, nn.Softplus):
                 mase_op = "softplus"
-            elif isinstance(module, nn.Hardtanh):  # TODO: This is not implemented yet
-                mase_op = "hardtanh"
+            # elif isinstance(module, nn.Hardtanh):  # TODO: This is not implemented yet
+            #     mase_op = "hardtanh"
             elif isinstance(module, nn.Embedding):
                 mase_type = "implicit_func"
                 mase_op = "embedding"
