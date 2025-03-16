@@ -73,7 +73,7 @@ async def test(dut):
         return value
 
     # Monitor DUT during execution
-    for cycle in range(500):  # Observe for 50 cycles
+    for cycle in range(1500):  # Observe for 50 cycles
         await Timer(20, units="ns")  # Adjust timing based on design
         tb._log.info(f"Cycle {{cycle+1}}:")
         # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
@@ -88,6 +88,9 @@ async def test(dut):
         # tb._log.info(f"  convolution_mase_data_buffer: {{decimal_value_data_buffer}}")
         # decimal_value_reshape_data_in = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in.value]
         # tb._log.info(f"  convolution_reshape_data_in: {{decimal_value_reshape_data_in}}")
+        # decimal_value_reshape_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_out.value]
+        # tb._log.info(f"  convolution_reshape_data_out: {{decimal_value_reshape_data_out}}")
+
         # decimal_value_reshape_data_in[0] = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_reshaper_0.data_in[0].value]
         # tb._log.info(f"  convolution_sliding_data_in: {{dut.conv1_inst.sliding_data_in_0.value}}")
         # tb._log.info(f"  convolution_packed_data_in: {{dut.conv1_inst.packed_data_in.value}}")
@@ -122,11 +125,11 @@ async def test(dut):
         tb._log.info(f"  convolution_padding_data_out_valid: {{dut.conv1_inst.padding_mase_inst1.data_out_valid.value}}")
         tb._log.info(f"  convolution_padding_data_out_ready: {{dut.conv1_inst.padding_mase_inst1.data_out_ready.value}}")
 
-        # decimal_striding_data_in = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_in.value))
-        # tb._log.info(f"  convolution_striding_data_in: {{decimal_striding_data_in}}")
-        # decimal_striding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.striding_inst1.result_out.value]
-        # tb._log.info(f"  convolution_striding_data_out: {{decimal_striding_data_out}}")
-        # decimal_striding_pixel_out = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_count.value))
+        decimal_striding_data_in = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_in.value))
+        tb._log.info(f"  convolution_striding_data_in: {{decimal_striding_data_in}}")
+        decimal_striding_data_out = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.striding_inst1.result_out.value]
+        tb._log.info(f"  convolution_striding_data_out: {{decimal_striding_data_out}}")
+        decimal_striding_pixel_out = bin_to_signed_int(str(dut.conv1_inst.striding_inst1.pixel_count.value))
         # tb._log.info(f"  convolution_striding_pixel_count: {{decimal_striding_pixel_out}}")
         # tb._log.info(f"  convolution_striding_pixel_count_bin: {{dut.conv1_inst.striding_inst1.pixel_count.value}}")
         # tb._log.info(f"  convolution_striding_collect: {{dut.conv1_inst.striding_inst1.collect.value}}")
