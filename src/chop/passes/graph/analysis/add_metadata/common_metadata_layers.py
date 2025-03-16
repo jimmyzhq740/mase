@@ -805,13 +805,13 @@ def analyse_common_parameters_module(meta, result, args, kwargs, add_value=True)
         }
         if add_value:
             meta["common"]["args"][name]["value"] = parameter
-    if hasattr (meta.module,"stride"):
-        print ("stride",meta.module.stride)
-        meta["common"]["args"]["stride"]=(meta.module.stride)
+    # if hasattr (meta.module,"stride"):
+    #     print ("stride",meta.module.stride)
+    #     meta["common"]["args"]["stride"]=(meta.module.stride)
 
-    if hasattr (meta.module,"padding"):
-        print ("Padding",meta.module.padding)
-        meta["common"]["args"]["padding"]=(meta.module.padding)
+    # if hasattr (meta.module,"padding"):
+    #     print ("Padding",meta.module.padding)
+    #     meta["common"]["args"]["padding"]=(meta.module.padding)
     print ("meta after for:", meta["common"])
     meta = _annotate_result_metadata(meta, result, add_value)
     return meta
