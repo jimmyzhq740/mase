@@ -111,26 +111,22 @@ module out_buffer #(
   always_ff @(posedge clk or negedge rst_n) begin
     if (extraction_valid) begin
       if (data_out_valid && data_out_ready) begin
-        if (!window_hold) begin
-          // Hold the current window for one clock cycle.
-          window_hold <= 1;
-        end else begin
-          window_hold <= 0;
-          // Update window traversal counters.
-          if (win_col_idx < NUM_WIN_COLS - 1) win_col_idx <= win_col_idx + 1;
+
+        // Update window traversal counters.
+        if (win_col_idx < NUM_WIN_COLS - 1) win_col_idx <= win_col_idx + 1;
+        else begin
+          win_col_idx <= 0;
+          if (win_row_idx < NUM_WIN_ROWS - 1) win_row_idx <= win_row_idx + 1;
           else begin
-            win_col_idx <= 0;
-            if (win_row_idx < NUM_WIN_ROWS - 1) win_row_idx <= win_row_idx + 1;
-            else begin
-              // All windows have been output; reset the window counters and invalidate extraction.
-              win_row_idx <= 0;
-              extraction_valid <= 0;
-            end
+            // All windows have been output; reset the window counters and invalidate extraction.
+            win_row_idx <= 0;
+            extraction_valid <= 0;
           end
         end
       end
     end
   end
+
 
 
   //   data_out[r*WIN + c] = matrix_buf[current_read][(win_row_idx*WIN)+r][(win_col_idx*WIN)+c]
