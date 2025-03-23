@@ -73,7 +73,7 @@ async def test(dut):
         return value
 
     # Monitor DUT during execution
-    for cycle in range(500):  # Observe for 50 cycles
+    for cycle in range(1500):  # Observe for 50 cycles
         await Timer(20, units="ns")  # Adjust timing based on design
         tb._log.info(f"Cycle {{cycle+1}}:")
         # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
@@ -214,7 +214,7 @@ async def test(dut):
         # tb._log.info(f"  convolution_arith_arith_valid: {{dut.conv1_inst.conv_arith_inst.arith_valid.value}}")
         # tb._log.info(f"  convolution_arith_arith_ready: {{dut.conv1_inst.conv_arith_inst.arith_ready.value}}")
         # tb._log.info(f"  convolution_arith_counter: {{dut.conv1_inst.conv_arith_inst.counter.value}}")
-        tb._log.info(f"  convolution_arith_pixel_counter: {{dut.conv1_inst.conv_arith_inst.pixel_counter.value}}")
+        # tb._log.info(f"  convolution_arith_pixel_counter: {{dut.conv1_inst.conv_arith_inst.pixel_counter.value}}")
         # tb._log.info(f"  convolution_arith_image_done: {{dut.conv1_inst.conv_arith_inst.image_done.value}}")
         # Debug:
         # children = [child._name for child in dut.conv1_inst.conv_arith_mase_array_inst1]
@@ -224,6 +224,11 @@ async def test(dut):
         decimal_parallel_block_binary_list = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.conv_arith_mase_array_inst1.debug_arith_data_out.value]
         tb._log.info(f"  convolution_arith_array_parallel_block_out: {{decimal_parallel_block_binary_list}}")
         tb._log.info(f"  convolution_arith_array_parallel_block_out: {{dut.conv1_inst.conv_arith_mase_array_inst1.debug_arith_data_out.value}}")
+
+
+        decimal_parallel_block_rounding_binary_list = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.conv_arith_mase_array_inst1.fixed_rounding_out.value]
+        tb._log.info(f"  convolution_arith_array_parallel_block_rounding_out: {{decimal_parallel_block_rounding_binary_list}}")
+        tb._log.info(f"  convolution_arith_array_parallel_block__rounding_out: {{dut.conv1_inst.conv_arith_mase_array_inst1.fixed_rounding_out.value}}")
 
         arith_array_weigh_data_mul_in_binary_list = dut.conv1_inst.conv_arith_mase_array_inst1.weight_data_mul.value
         decimal_weight_data_mul_in_binary_list = [[bin_to_signed_int(bv.binstr[i:i+8]) for i in range(0, len(bv.binstr), 8)] for bv in arith_array_weigh_data_mul_in_binary_list]
@@ -261,6 +266,10 @@ async def test(dut):
         tb._log.info(f"  convolution_arith_array_state_data_in_live: {{dut.conv1_inst.conv_arith_mase_array_inst1.data_in_live.value}}")
         tb._log.info(f"  convolution_arith_array_state_data_in_buffer: {{dut.conv1_inst.conv_arith_mase_array_inst1.data_in_buffer.value}}")
 
+        decimal_conv_arith_array_buffer_data_out= [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.conv_arith_mase_array_inst1.out_buffer.value]
+        tb._log.info(f"  convolution_arith_array_buffer_data_out: {{decimal_conv_arith_array_buffer_data_out}}")
+        tb._log.info(f"  convolution_arith_array_buffer_data_out: {{dut.conv1_inst.conv_arith_mase_array_inst1.out_counter.value}}")
+        tb._log.info(f"  convolution_arith_array_out_buffer_valid: {{dut.conv1_inst.conv_arith_mase_array_inst1.out_buffer_valid.value}}")
 
         tb._log.info(f"  convolution_striding_buffer_in_valid: {{dut.conv1_inst.conv_arith_mase_array_inst1.striding_input_buffer_inst.data_in_valid.value}}")
         tb._log.info(f"  convolution_striding_buffer_in_ready: {{dut.conv1_inst.conv_arith_mase_array_inst1.striding_input_buffer_inst.buffer_ready.value}}")
@@ -272,6 +281,8 @@ async def test(dut):
         decimal_striding_data_mul_in_binary_list = [[bin_to_signed_int(bv.binstr[i:i+8]) for i in range(0, len(bv.binstr), 8)] for bv in arith_array_striding_data_mul_in_binary_list]
         tb._log.info(f"  convolution_arith_array_striding_data_mul_in: {{decimal_striding_data_mul_in_binary_list}}")
         tb._log.info(f"  convolution_arith_array_image_done: {{dut.conv1_inst.conv_arith_mase_array_inst1.image_done.value}}")
+
+
 
 
 

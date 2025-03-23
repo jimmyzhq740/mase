@@ -196,25 +196,6 @@ module convolution_mase #(
 
   logic [DATA_IN_0_PRECISION_0 - 1:0] striding_data_out [WEIGHT_TENSOR_SIZE_DIM_0*WEIGHT_TENSOR_SIZE_DIM_1-1:0];
   logic striding_data_out_valid;
-  //   assign conv_arith_ready = 'd1;
-  //   striding #(
-  //       .DATA_WIDTH(DATA_IN_0_PRECISION_0),
-  //       .KERNEL_X(WEIGHT_TENSOR_SIZE_DIM_0),
-  //       .KERNEL_Y(WEIGHT_TENSOR_SIZE_DIM_1),
-  //       .DATA_IN_0_TENSOR_SIZE_DIM_0(DATA_IN_0_TENSOR_SIZE_DIM_0),
-  //       .DATA_IN_0_TENSOR_SIZE_DIM_1(DATA_IN_0_TENSOR_SIZE_DIM_1),
-  //       .PADDING(PADDING_TENSOR_SIZE_DIM_0_VALUE)
-  //   ) striding_inst1 (
-  //       .clk(clk),
-  //       .rst_n(rst),
-  //       .pixel_in(padding_mase_data_out),
-  //       .pixel_in_valid(padding_data_out_valid),
-  //       .pixel_in_ready(striding_ready),
-  //       .result_out(striding_data_out),
-  //       .sliding_window_valid(striding_data_out_valid),
-
-  //       .sliding_window_ready(conv_arith_ready)
-  //   );
 
   striding #(
       .DATA_WIDTH (DATA_IN_0_PRECISION_0),
@@ -269,25 +250,7 @@ module convolution_mase #(
   assign buffer_weight_mul_single = buffer_weight_mul[1];
 
   logic [ARITH_DATA_OUT_WIDTH-1:0] arith_data_out;
-  conv_arith_mase #(
-      .DATA_IN_0_PRECISION_0(DATA_IN_0_PRECISION_0),
-      .WEIGHT_PRECISION_0(WEIGHT_PRECISION_0),
-      .WEIGHT_TENSOR_SIZE_DIM_0(WEIGHT_TENSOR_SIZE_DIM_0),
-      .WEIGHT_TENSOR_SIZE_DIM_1(WEIGHT_TENSOR_SIZE_DIM_1)
-  ) conv_arith_inst (
-      .clk(clk),
-      .rst(rst),
-      .weight_valid(buffer_valid),  // top gives to here
-      .weight_ready(weight_math_ready),  // gives to weight_source module to send data
-      .weight_data(buffer_weight_out),
-      .weight_data_mul(buffer_weight_mul_single),  // I extra add here, only a single element to each conv_arith_mase
-      .data_in_valid(striding_data_out_valid),
-      .data_in_ready(conv_arith_ready),
-      .data_in(striding_data_out),
-      .arith_valid(arith_valid),
-      .arith_ready(arith_ready),
-      .arith_data_out(arith_data_out)
-  );
+
 
   logic arith_ready = 'b1;
   conv_arith_mase_array #(
@@ -311,45 +274,22 @@ module convolution_mase #(
       .data_in_valid(striding_data_out_valid),
       .data_in_ready(conv_arith_ready),
       .data_in(striding_data_out),
-      .arith_valid(arith_valid),
-      .arith_ready(arith_ready)
+      //   .arith_valid(arith_valid),
+      .arith_parallel_valid(data_out_0_valid),
+      .arith_ready(arith_ready),
+      .arith_parallel_data_out(data_out_0)
       //.arith_data_out(arith_data_out)
   );
 
 
 
-  fixed_signed_cast #(
-      .IN_WIDTH(ROUND_PRECISION_0),
-      .IN_FRAC_WIDTH(ROUND_PRECISION_1),
-      .OUT_WIDTH(DATA_OUT_0_PRECISION_0),
-      .OUT_FRAC_WIDTH(DATA_OUT_0_PRECISION_1),
-      .ROUND_FLOOR(1)
-  ) fr_inst (
-      .in_data (arith_data_out),
-      .out_data(fixed_rounding_out)
-  );
 
   localparam ROUND_PRECISION_0 = DATA_IN_0_PRECISION_0 + WEIGHT_PRECISION_0 + $clog2(
       WEIGHT_TENSOR_SIZE_DIM_0 * WEIGHT_TENSOR_SIZE_DIM_1 * IN_C
   );
   localparam ROUND_PRECISION_1 = DATA_IN_0_PRECISION_1 + WEIGHT_PRECISION_1;
   logic arith_valid;
-  logic [DATA_IN_0_PRECISION_0-1:0] fixed_rounding_out;
+  //   logic [DATA_IN_0_PRECISION_0-1:0] fixed_rounding_out;
   logic [DATA_IN_0_PRECISION_0-1:0] out_buffer_out [DATA_IN_0_PARALLELISM_DIM_0*DATA_IN_0_PARALLELISM_DIM_1-1:0];
-  //   out_buffer #(
-  //       .DATA_WIDTH(DATA_IN_0_PRECISION_0),
-  //       .DATA_IN_0_PARALLELISM_DIM_0(DATA_IN_0_PARALLELISM_DIM_1),
-  //       .DATA_IN_0_PARALLELISM_DIM_1((DATA_IN_0_PARALLELISM_DIM_1)),
-  //       .DATA_IN_0_TENSOR_SIZE_DIM_0(DATA_IN_0_TENSOR_SIZE_DIM_0),
-  //       .DATA_IN_0_TENSOR_SIZE_DIM_1(DATA_IN_0_TENSOR_SIZE_DIM_1)
-  //   ) out_buffer_inst (
-  //       .clk(clk),
-  //       .rst_n(rst),
-  //       .data_in(fixed_rounding_out),
-  //       .data_in_valid(arith_valid),
-  //       .data_in_ready(arith_ready),
-  //       .data_out(data_out_0),
-  //       .data_out_valid(data_out_0_valid),
-  //       .data_out_ready(data_out_0_ready)
-  //   );
+
 endmodule

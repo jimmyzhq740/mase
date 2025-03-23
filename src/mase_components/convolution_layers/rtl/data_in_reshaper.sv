@@ -29,10 +29,13 @@ module data_in_reshaper #(
   localparam SPATIAL_GROUPS_X = IMG_WIDTH / SPATIAL_GROUP_X;
   localparam SPATIAL_GROUPS_Y = IMG_HEIGHT / SPATIAL_GROUP_Y;
   localparam INPUT_ARRAY_SIZE = BATCH_SIZE * UNROLL_CHANNELS * SPATIAL_GROUP_Y * SPATIAL_GROUP_X;
+  localparam BUFFER_SIZE = BATCH_SIZE * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH;
 
   // Input buffer to store received data
-  logic [DATA_WIDTH-1:0] data_buffer[BATCH_SIZE*IN_CHANNELS*IMG_HEIGHT*IMG_WIDTH-1:0];
-  logic buffer_filled;
+  logic [DATA_WIDTH-1:0] data_buffer[BUFFER_SIZE-1:0];
+
+  // Buffer validity tracking - NEW
+  logic buffer_valid[BUFFER_SIZE-1:0];
 
   // Position counters
   logic [$clog2(BATCH_SIZE):0] batch_count;
@@ -45,6 +48,7 @@ module data_in_reshaper #(
   logic [$clog2(SPATIAL_GROUPS_X):0] spatial_group_x_count;
   logic [$clog2(SPATIAL_GROUPS_Y):0] spatial_group_y_count;
   logic [$clog2(TOTAL_GROUPS):0] input_channel_group;
+  logic [$clog2(BATCH_SIZE):0] input_batch_count;
 
   // Status tracking
   logic next_batch_ready;  // Indicates when ready for next input batch
@@ -53,15 +57,74 @@ module data_in_reshaper #(
   int input_count;
   int output_count;
 
+  // Output position tracking - NEW
+  int current_output_idx;
+  int next_output_idx;
+
+  // Complete processing tracking - NEW
+  logic all_data_processed;
+  int pixels_processed;
+  int total_pixels_to_process;
+
+  // Initialize buffer validity - NEW
+  initial begin
+    for (int i = 0; i < BUFFER_SIZE; i++) begin
+      buffer_valid[i] = 0;
+    end
+    all_data_processed = 0;
+    pixels_processed = 0;
+    total_pixels_to_process = BATCH_SIZE * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH;
+  end
+
+  // Current output index computation
+  always_comb begin
+    current_output_idx = batch_count * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH +
+                       (channel_group * UNROLL_CHANNELS) * IMG_HEIGHT * IMG_WIDTH +
+                       y_count * IMG_WIDTH + x_count;
+
+    // Calculate next output position index with wrapping logic
+    if (x_count == IMG_WIDTH - 1) begin
+      if (y_count == IMG_HEIGHT - 1) begin
+        if (channel_group == TOTAL_GROUPS - 1) begin
+          if (batch_count == BATCH_SIZE - 1) begin
+            // Last pixel in last batch
+            next_output_idx = 0;  // Wrap to beginning
+          end else begin
+            // First pixel in next batch
+            next_output_idx = (batch_count + 1) * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH;
+          end
+        end else begin
+          // First pixel in next channel group
+          next_output_idx = batch_count * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH +
+                           ((channel_group + 1) * UNROLL_CHANNELS) * IMG_HEIGHT * IMG_WIDTH;
+        end
+      end else begin
+        // First pixel in next row
+        next_output_idx = batch_count * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH +
+                         (channel_group * UNROLL_CHANNELS) * IMG_HEIGHT * IMG_WIDTH +
+                         (y_count + 1) * IMG_WIDTH;
+      end
+    end else begin
+      // Next pixel in same row
+      next_output_idx = current_output_idx + 1;
+    end
+  end
+
   // Buffer filling state machine - WITH REVERSED ELEMENT ORDER
   always_ff @(posedge clk) begin
     if (rst) begin
       spatial_group_x_count <= 0;
       spatial_group_y_count <= 0;
       input_channel_group <= 0;
-      buffer_filled <= 0;
+      input_batch_count <= 0;
       input_count <= 0;
       next_batch_ready <= 1;  // Ready to accept first batch after reset
+
+      // Clear buffer validity
+      for (int i = 0; i < BUFFER_SIZE; i++) begin
+        buffer_valid[i] = 0;
+      end
+
     end else if (data_in_valid && data_in_ready) begin
       // Increment counter whenever we receive a batch
       input_count <= input_count + 1;
@@ -83,18 +146,15 @@ module data_in_reshaper #(
               // Normal buffer index calculation
               automatic
               int
-              buffer_idx = b * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH +
+              buffer_idx = (input_batch_count + b) % BATCH_SIZE * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH +
                                                      (input_channel_group * UNROLL_CHANNELS + c) * IMG_HEIGHT * IMG_WIDTH +
                                                      (spatial_group_y_count * SPATIAL_GROUP_Y + y) * IMG_WIDTH +
                                                      (spatial_group_x_count * SPATIAL_GROUP_X + x);
 
               // Check that we're not exceeding buffer bounds
-              if (buffer_idx < BATCH_SIZE*IN_CHANNELS*IMG_HEIGHT*IMG_WIDTH &&
-                                input_idx < INPUT_ARRAY_SIZE) begin
-                data_buffer[buffer_idx] = data_in[input_idx];
-                // $display("Buffer", data_buffer[buffer_idx], $time, "   index", buffer_idx);
-                // $display("input ", data_in[input_idx], $time, "  index", input_idx);
-
+              if (buffer_idx < BUFFER_SIZE && input_idx < INPUT_ARRAY_SIZE) begin
+                data_buffer[buffer_idx]  = data_in[input_idx];
+                buffer_valid[buffer_idx] = 1;  // Mark this location as valid
               end
             end
           end
@@ -108,8 +168,15 @@ module data_in_reshaper #(
           spatial_group_y_count <= 0;
           if (input_channel_group >= TOTAL_GROUPS - 1) begin
             input_channel_group <= 0;
-            buffer_filled <= 1;  // Buffer is now fully filled
-            next_batch_ready <= 0;  // Stop accepting new batches until buffer processed
+
+            // Move to the next batch
+            if (input_batch_count >= BATCH_SIZE - 1) begin
+              input_batch_count <= 0;
+            end else begin
+              input_batch_count <= input_batch_count + 1;
+            end
+
+            next_batch_ready <= 1;  // Ready for next batch immediately
           end else begin
             input_channel_group <= input_channel_group + 1;
             next_batch_ready <= 1;  // Ready for next batch immediately
@@ -125,7 +192,7 @@ module data_in_reshaper #(
     end
   end
 
-  // Output processing state machine
+  // Output processing state machine - MODIFIED to check data availability
   always_ff @(posedge clk) begin
     if (rst) begin
       batch_count <= 0;
@@ -135,12 +202,22 @@ module data_in_reshaper #(
       processing <= 0;
       data_out_valid <= 0;
       output_count <= 0;
-    end else if (buffer_filled && !processing) begin
-      // Start processing when buffer is filled
+      pixels_processed <= 0;
+      all_data_processed <= 0;
+    end else if (!processing && buffer_valid[current_output_idx]) begin
+      // Start/resume processing when data at the current output position is available
       processing <= 1;
       data_out_valid <= 1;
     end else if (processing && data_out_ready) begin
       output_count <= output_count + 1;
+      pixels_processed <= pixels_processed + 1;
+
+      if (pixels_processed + 1 >= total_pixels_to_process) begin
+        all_data_processed <= 1;
+      end
+
+      // Mark this data as processed (optional, can be removed to save logic)
+      buffer_valid[current_output_idx] <= 0;
 
       // Update position counters
       if (x_count >= IMG_WIDTH - 1) begin
@@ -151,10 +228,8 @@ module data_in_reshaper #(
             channel_group <= 0;
             if (batch_count >= BATCH_SIZE - 1) begin
               batch_count <= 0;
-              processing <= 0;  // Done with all data
-              data_out_valid <= 0;
-              buffer_filled <= 0;  // Ready for new buffer fill
-              next_batch_ready <= 1;  // Ready to accept new batches again
+              pixels_processed <= 0;  // Reset for next processing cycle
+              all_data_processed <= 0;
             end else begin
               batch_count <= batch_count + 1;
             end
@@ -167,26 +242,34 @@ module data_in_reshaper #(
       end else begin
         x_count <= x_count + 1;
       end
+
+      // Check if the next output position data is available
+      if (buffer_valid[next_output_idx]) begin
+        data_out_valid <= 1;
+      end else begin
+        data_out_valid <= 0;  // Pause output until the next data is available
+        processing <= 0;     // Pause processing
+      end
     end
   end
 
-  // Data output generation - MODIFIED TO REVERSE OUTPUT ORDER
+  // Data output generation
   genvar i;
   generate
     for (i = 0; i < UNROLL_CHANNELS; i++) begin : gen_channel_select
       always_comb begin
-        if (processing && (channel_group * UNROLL_CHANNELS + i < IN_CHANNELS)) begin
+        if (processing && buffer_valid[current_output_idx] &&
+            (channel_group * UNROLL_CHANNELS + i < IN_CHANNELS)) begin
           // Calculate buffer index for output
           automatic
           int
           buffer_idx_2 = batch_count * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH +
-                                             (channel_group * UNROLL_CHANNELS + i) * IMG_HEIGHT * IMG_WIDTH +
-                                             y_count * IMG_WIDTH + x_count;
+                         (channel_group * UNROLL_CHANNELS + i) * IMG_HEIGHT * IMG_WIDTH +
+                         y_count * IMG_WIDTH + x_count;
 
-          if (buffer_idx_2 < BATCH_SIZE * IN_CHANNELS * IMG_HEIGHT * IMG_WIDTH) begin
-            // MODIFIED: Reverse the output order by mapping i to (UNROLL_CHANNELS-1-i)
+          if (buffer_idx_2 < BUFFER_SIZE) begin
+
             data_out[UNROLL_CHANNELS-1-i] = data_buffer[buffer_idx_2];
-            // $display("buffer_out_index", buffer_idx_2);
           end else begin
             data_out[UNROLL_CHANNELS-1-i] = 0;
           end
@@ -197,7 +280,9 @@ module data_in_reshaper #(
     end
   endgenerate
 
-  // Optimized ready signal logic
-  assign data_in_ready = next_batch_ready;
+
+  // Accept new data if we're not in the middle of processing the current output
+  // or if we're processing but downstream module is ready for more data
+  assign data_in_ready = next_batch_ready && (!all_data_processed);
 
 endmodule
