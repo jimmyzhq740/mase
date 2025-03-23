@@ -64,6 +64,8 @@ def simulate(
                 "--trace-structs",
                 "--trace-depth",
                 str(trace_depth),
+                "--stats",
+
             ]
         else:
             raise ValueError(f"Unrecognized simulator: {simulator}")
@@ -101,6 +103,7 @@ def simulate(
             hdl_toplevel_lang="verilog",
             gui=gui,
             waves=waves,
+
         )
         test_end = time.time()
         logger.info(f"Test finished. Time taken: {test_end - test_start:.2f}s")
