@@ -197,6 +197,15 @@ def add_extra_verilog_param(node, graph: MaseGraph):
             vp["O_PROJECTION_WEIGHT_PARALLELISM_DIM_1"] = vp[
                 "O_PROJECTION_WEIGHT_PARALLELISM_DIM_0"
             ]
+        elif isinstance(module, nn.MaxPool2d):
+            vp.update({
+                "DATA_IN_0_PRECISION_0": 8,
+                "DATA_IN_0_PRECISION_1": 5,
+                "DATA_OUT_0_PRECISION_0": 8,
+                "DATA_OUT_0_PRECISION_1": 5,
+                "POOL_SIZE": 2,
+                "FIFO_DEPTH": 16,
+            })
         elif isinstance(module, nn.Conv2d):
             vp["HAS_BIAS"] = 1 if module.bias else 0
             #To generate stride and padding parameter for sv file:
@@ -475,7 +484,7 @@ def add_hardware_metadata_analysis_pass(graph, pass_args={}):
     print (" I changed max_parallelism add_hardware_metadata_analysis_pass")
     for node in graph.nodes:
         node.meta["mase"]["hardware"]["max_parallelism"] = pass_args.get(
-            "max_parallelism", [2] * 4
+            "max_parallelism", [4] * 4
         )
 
     # Add hardware parameters
