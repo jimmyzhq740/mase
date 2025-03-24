@@ -52,7 +52,6 @@ module max_pooling_2d #(
     output logic signed [DATA_OUT_0_PRECISION_0-1:0] data_out_0 [DATA_OUT_0_PARALLELISM_DIM_0 * DATA_OUT_0_PARALLELISM_DIM_1 * DATA_OUT_0_PARALLELISM_DIM_2-1:0],
     output logic data_out_0_valid,
     input logic data_out_0_ready
-    input logic data_out_0_ready
 );
 
   // Set data width (e.g. 8 bits)
@@ -106,11 +105,6 @@ module max_pooling_2d #(
   // Both window_regs and window_max are declared as signed
   logic signed [DATA_WIDTH-1:0] window_regs[0:NUM_WINDOWS-1][0:POOL_SIZE*POOL_SIZE-1];
   logic signed [DATA_WIDTH-1:0] window_max[0:NUM_WINDOWS-1];
-  // =========================================================
-  // 3) Define 4 pooling windows (each 2x2) with 4 elements each
-  // Both window_regs and window_max are declared as signed
-  logic signed [DATA_WIDTH-1:0] window_regs[0:NUM_WINDOWS-1][0:POOL_SIZE*POOL_SIZE-1];
-  logic signed [DATA_WIDTH-1:0] window_max[0:NUM_WINDOWS-1];
 
   // Instantiate pool_window modules (each computes the maximum of 4 values)
   genvar i;
@@ -125,28 +119,7 @@ module max_pooling_2d #(
       );
     end
   endgenerate
-  // Instantiate pool_window modules (each computes the maximum of 4 values)
-  genvar i;
-  generate
-    for (i = 0; i < NUM_WINDOWS; i = i + 1) begin : gen_pw
-      pool_window #(
-          .DATA_WIDTH(DATA_WIDTH),
-          .POOL_SIZE (POOL_SIZE)
-      ) u_pool_window (
-          .window_data(window_regs[i]),
-          .max_value  (window_max[i])
-      );
-    end
-  endgenerate
 
-  // State machine control: IDLE, BUFFER, PROCESS, OUTPUT
-  typedef enum logic [1:0] {
-    IDLE,
-    BUFFER,
-    PROCESS,
-    OUTPUT
-  } state_t;
-  state_t current_state, next_state;
   // State machine control: IDLE, BUFFER, PROCESS, OUTPUT
   typedef enum logic [1:0] {
     IDLE,
