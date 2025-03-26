@@ -57,9 +57,6 @@ async def test(dut):
 
     # print ("in_tensors: ", in_tensors)
     # print (tb.model)
-    # print ("weight: ", tb.model.fc1.weight)
-    # print ("Bias: ", tb.model.fc1.bias)
-    # print ("exp_out: ", exp_out)
 
     tb.load_drivers(in_tensors)
     tb.load_monitors(exp_out)
@@ -73,7 +70,7 @@ async def test(dut):
         return value
 
     # Monitor DUT during execution
-    for cycle in range(1500):  # Observe for 50 cycles
+    for cycle in range(500):  # Observe for 50 cycles
         await Timer(20, units="ns")  # Adjust timing based on design
         tb._log.info(f"Cycle {{cycle+1}}:")
         # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
@@ -305,21 +302,27 @@ async def test(dut):
         # tb._log.info(f"  convolution_striding_buffer_data_in[7]: {{decimal_striding_buffer_input7}}")
         # decimal_striding_buffer_input8 = bin_to_signed_int(str(dut.conv1_inst.conv_arith_mase_array_inst1.striding_input_buffer_inst.striding_data_in[8].value))
         # tb._log.info(f"  convolution_striding_buffer_data_in[8]: {{decimal_striding_buffer_input8}}")
+        ####################################################################################################################
+        # # convolution
+        # conv_in = [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_in_0.value]
+        # conv_out= [bin_to_signed_int(str(bit)) for bit in dut.conv1_inst.data_out_0.value]
 
+        # tb._log.info(f"  conv_in: {{conv_in}}")
+        # tb._log.info(f"  conv_out: {{conv_out}}")
 
 
         ####################################################################################################################
-        # Pooling Test
+        # # Pooling Test
 
-        pool_in = [bin_to_signed_int(str(bit)) for bit in dut.maxpool_inst.data_in_0.value]
-        pool_out = [bin_to_signed_int(str(bit)) for bit in dut.maxpool_inst.data_out_0.value]
+        # pool_in = [bin_to_signed_int(str(bit)) for bit in dut.maxpool_inst.data_in_0.value]
+        # pool_out = [bin_to_signed_int(str(bit)) for bit in dut.maxpool_inst.data_out_0.value]
 
-        tb._log.info(f"  in: {{pool_in}}")
-        tb._log.info(f"  data_in_0_valid: {{dut.maxpool_inst.data_in_0_valid.value}}")
-        tb._log.info(f"  data_in_0_ready: {{dut.maxpool_inst.data_in_0_ready.value}}")
-        tb._log.info(f"  out: {{pool_out}}")
-        tb._log.info(f"  data_out_0_valid: {{dut.maxpool_inst.data_out_0_valid.value}}")
-        tb._log.info(f"  data_out_0_ready: {{dut.maxpool_inst.data_out_0_ready.value}}")
+        # tb._log.info(f"  pool_in: {{pool_in}}")
+        # tb._log.info(f"  data_in_0_valid: {{dut.maxpool_inst.data_in_0_valid.value}}")
+        # tb._log.info(f"  data_in_0_ready: {{dut.maxpool_inst.data_in_0_ready.value}}")
+        # tb._log.info(f"  pool_out: {{pool_out}}")
+        # tb._log.info(f"  data_out_0_valid: {{dut.maxpool_inst.data_out_0_valid.value}}")
+        # tb._log.info(f"  data_out_0_ready: {{dut.maxpool_inst.data_out_0_ready.value}}")
 
         ####################################################################################################################
 

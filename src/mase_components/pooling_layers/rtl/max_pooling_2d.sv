@@ -1,5 +1,4 @@
 `timescale 1ns / 1ps
-`timescale 1ns / 1ps
 
 module max_pooling_2d #(
     // Data precision parameters (signed)
@@ -38,7 +37,7 @@ module max_pooling_2d #(
     
 
     // FIFO related parameter (adjustable)
-    parameter FIFO_DEPTH = 4
+    parameter FIFO_DEPTH = 16
 ) (
     input logic clk,
     input logic rst,
