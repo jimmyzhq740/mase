@@ -1,8 +1,6 @@
 `timescale 1ns / 1ps
 
 module max_pooling_2d #(
-    // Data precision parameters (signed)
-    // Data precision parameters (signed)
     parameter DATA_IN_0_PRECISION_0  = 8,
     parameter DATA_IN_0_PRECISION_1  = 5,
     parameter DATA_OUT_0_PRECISION_0 = 8,
@@ -33,11 +31,11 @@ module max_pooling_2d #(
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_0 = 1,
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_1 = 1,
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_2 = 1,
-    parameter DATA_OUT_0_TENSOR_SIZE_DIM_3 = 1,
+    parameter DATA_OUT_0_TENSOR_SIZE_DIM_3 = 1
     
 
     // FIFO related parameter (adjustable)
-    parameter FIFO_DEPTH = 16
+    
 ) (
     input logic clk,
     input logic rst,
@@ -60,19 +58,35 @@ module max_pooling_2d #(
 
   // For a 8x8 input and 2x2 pooling, but first acc 4 row to process
   localparam NUM_WINDOWS = HEIGHT; 
+  localparam FIFO_DEPTH = 16;
 
   logic signed [DATA_IN_0_PRECISION_0 * HEIGHT-1:0] fifo_in_data_packed;
   logic signed [DATA_IN_0_PRECISION_0 * HEIGHT-1:0] fifo_out_data_packed;
-  assign fifo_in_data_packed = {data_in_0[0], data_in_0[1], data_in_0[2], data_in_0[3], data_in_0[4], data_in_0[5], data_in_0[6], data_in_0[7]};
 
-  wire signed [7:0] fifo_out_data_7 = fifo_out_data_packed[7:0];    // bits 0 到 7
-  wire signed [7:0] fifo_out_data_6 = fifo_out_data_packed[15:8];   // bits 8 到 15
-  wire signed [7:0] fifo_out_data_5 = fifo_out_data_packed[23:16];  // bits 16 到 23
-  wire signed [7:0] fifo_out_data_4 = fifo_out_data_packed[31:24];  // bits 24 到 31
-  wire signed [7:0] fifo_out_data_3 = fifo_out_data_packed[39:32];  // bits 32 到 39
-  wire signed [7:0] fifo_out_data_2 = fifo_out_data_packed[47:40];  // bits 40 到 47
-  wire signed [7:0] fifo_out_data_1 = fifo_out_data_packed[55:48];  // bits 48 到 55
-  wire signed [7:0] fifo_out_data_0 = fifo_out_data_packed[63:56];  // bits 56 到 63
+  // assign fifo_in_data_packed = {data_in_0[0], data_in_0[1], data_in_0[2], data_in_0[3], data_in_0[4], data_in_0[5], data_in_0[6], data_in_0[7]};
+
+  // wire signed [7:0] fifo_out_data_7 = fifo_out_data_packed[7:0];    
+  // wire signed [7:0] fifo_out_data_6 = fifo_out_data_packed[15:8];   
+  // wire signed [7:0] fifo_out_data_5 = fifo_out_data_packed[23:16];  
+  // wire signed [7:0] fifo_out_data_4 = fifo_out_data_packed[31:24];  
+  // wire signed [7:0] fifo_out_data_3 = fifo_out_data_packed[39:32];  
+  // wire signed [7:0] fifo_out_data_2 = fifo_out_data_packed[47:40];  
+  // wire signed [7:0] fifo_out_data_1 = fifo_out_data_packed[55:48];  
+  // wire signed [7:0] fifo_out_data_0 = fifo_out_data_packed[63:56];
+
+  always_comb begin
+    fifo_in_data_packed = '0;
+    for (int i = 0; i < HEIGHT; i++) begin
+      fifo_in_data_packed[i * DATA_IN_0_PRECISION_0 +: DATA_IN_0_PRECISION_0] = data_in_0[i];
+    end
+  end
+
+  logic signed [DATA_IN_0_PRECISION_0-1:0] fifo_out_data [0:HEIGHT-1];
+  generate
+    for (genvar i = 0; i < HEIGHT; i = i + 1) begin : gen_fifo_slices
+      assign fifo_out_data[i] = fifo_out_data_packed[i * DATA_IN_0_PRECISION_0 +: DATA_IN_0_PRECISION_0];
+    end
+  endgenerate
 
   // FIFO signals
   wire fifo_out_valid;
@@ -106,15 +120,15 @@ module max_pooling_2d #(
   logic signed [DATA_WIDTH-1:0] window_max[0:NUM_WINDOWS-1];
 
   // Instantiate pool_window modules (each computes the maximum of 4 values)
-  genvar i;
+  genvar k;
   generate
-    for (i = 0; i < NUM_WINDOWS; i = i + 1) begin : gen_pw
+    for (k = 0; k < NUM_WINDOWS; k = k + 1) begin : gen_pw
       pool_window #(
           .DATA_WIDTH(DATA_WIDTH),
           .POOL_SIZE (POOL_SIZE)
       ) u_pool_window (
-          .window_data(window_regs[i]),
-          .max_value  (window_max[i])
+          .window_data(window_regs[k]),
+          .max_value  (window_max[k])
       );
     end
   endgenerate
@@ -189,21 +203,33 @@ module max_pooling_2d #(
   end
 
 
+  // assign fifo_out_ready = next_fifo_out_ready;
+  // always_ff @(posedge clk) begin
+  //   if (!rst) begin
+  //     if (fifo_out_ready && fifo_out_valid) begin
+  //       for (int k = 0; k < WIDTH; k++) begin
+  //         case (k)
+  //           0: row_buffer[row_count][0] <= fifo_out_data_0;
+  //           1: row_buffer[row_count][1] <= fifo_out_data_1;
+  //           2: row_buffer[row_count][2] <= fifo_out_data_2;
+  //           3: row_buffer[row_count][3] <= fifo_out_data_3;
+  //           4: row_buffer[row_count][4] <= fifo_out_data_4;
+  //           5: row_buffer[row_count][5] <= fifo_out_data_5;
+  //           6: row_buffer[row_count][6] <= fifo_out_data_6;
+  //           7: row_buffer[row_count][7] <= fifo_out_data_7;
+  //         endcase
+  //       end
+  //     end
+  //   end
+  // end
+
   assign fifo_out_ready = next_fifo_out_ready;
+
   always_ff @(posedge clk) begin
     if (!rst) begin
       if (fifo_out_ready && fifo_out_valid) begin
-        for (int k = 0; k < WIDTH; k++) begin
-          case (k)
-            0: row_buffer[row_count][0] <= fifo_out_data_0;
-            1: row_buffer[row_count][1] <= fifo_out_data_1;
-            2: row_buffer[row_count][2] <= fifo_out_data_2;
-            3: row_buffer[row_count][3] <= fifo_out_data_3;
-            4: row_buffer[row_count][4] <= fifo_out_data_4;
-            5: row_buffer[row_count][5] <= fifo_out_data_5;
-            6: row_buffer[row_count][6] <= fifo_out_data_6;
-            7: row_buffer[row_count][7] <= fifo_out_data_7;
-          endcase
+        for (int k = 0; k < HEIGHT; k++) begin
+          row_buffer[row_count][k] <= fifo_out_data[k];
         end
       end
     end
