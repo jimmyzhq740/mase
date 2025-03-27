@@ -30,8 +30,6 @@ module max_pooling_2d #(
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_1 = 1,
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_2 = 1,
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_3 = 1
-
-    // FIFO related parameter (adjustable)
     
 ) (
     input logic clk,
@@ -243,14 +241,14 @@ module max_pooling_2d #(
   end
 
 
-always_ff @(posedge clk) begin
-  if (!rst && current_state == OUTPUT) begin
-    for (int i = 0; i < WINDOW_ROWS; i++) begin
-    data_out_0[i]            <= window_max[(WINDOW_ROWS-1-i)*2];
-    data_out_0[i+WINDOW_ROWS] <= window_max[(WINDOW_ROWS-1-i)*2+1];
+  always_ff @(posedge clk) begin
+    if (!rst && current_state == OUTPUT) begin
+      for (int i = 0; i < WINDOW_ROWS; i++) begin
+      data_out_0[i]            <= window_max[(WINDOW_ROWS-1-i)*2];
+      data_out_0[i+WINDOW_ROWS] <= window_max[(WINDOW_ROWS-1-i)*2+1];
+    end
+    end
   end
-  end
-end
 
 
 endmodule

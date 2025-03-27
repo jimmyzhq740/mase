@@ -33,6 +33,7 @@ This repository contains a CNN accelerator implemented in SystemVerilog with an 
 - **Max Pooling Layers:**
   - The PyTorch layer `nn.MaxPool2d` is recognized in the `add_common_metadata` pass.
   - Mapped to the `max_pool2d` operation and integrated via the `INTERNAL_COMP` library.
+  - Module `pool_window.sv` was written by our team and added to MASE, and `FIFO.sv` is already defined in the MASE.
   - Automatically generates the necessary hardware metadata and SystemVerilog parameters.
 
 ## CNN Architecture Overview
