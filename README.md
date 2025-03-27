@@ -1,82 +1,109 @@
-# Machine-Learning Accelerator System Exploration Tools
+# CNN Accelerator: Hardware Methodology & Architecture
 
-[![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![Doc][doc-shield]][doc-url]
+This repository contains a CNN accelerator implemented in SystemVerilog with an end-to-end automated design flow—from PyTorch model definition to synthesizable hardware—using the MASE Machine Learning compiler. The design is simulated using Verilator and verified with Cocotb.
 
-[contributors-shield]: https://img.shields.io/github/contributors/DeepWok/mase.svg?style=flat
-[contributors-url]: https://github.com/DeepWok/mase/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/DeepWok/mase.svg?style=flat
-[forks-url]: https://github.com/DeepWok/mase/network/members
-[stars-shield]: https://img.shields.io/github/stars/DeepWok/mase.svg?style=flat
-[stars-url]: https://github.com/DeepWok/mase/stargazers
-[issues-shield]: https://img.shields.io/github/issues/DeepWok/mase.svg?style=flat
-[issues-url]: https://github.com/DeepWok/mase/issues
-[license-shield]: https://img.shields.io/github/license/DeepWok/mase.svg?style=flat
-[license-url]: https://github.com/DeepWok/mase/blob/master/LICENSE.txt
-[issues-shield]: https://img.shields.io/github/issues/DeepWok/mase.svg?style=flat
-[issues-url]: https://github.com/DeepWok/mase/issues
-[doc-shield]: https://readthedocs.org/projects/pytorch-geometric/badge/?version=latest
-[doc-url]: https://deepwok.github.io/mase/
+## Table of Contents
+- [Proposed Hardware Methodology](#proposed-hardware-methodology)
+- [CNN Architecture Overview](#cnn-architecture-overview)
+- [Padding Module](#padding-module)
+- [Striding Module](#striding-module)
+- [CNN Arithmetic Block](#cnn-arithmetic-block)
+- [Simulation Results](#simulation-results)
+- [Getting Started](#getting-started)
 
-## Overview
+## Proposed Hardware Methodology
 
-Mase is a Machine Learning compiler based on PyTorch FX, maintained by researchers at Imperial College London. We provide a set of tools for inference and training optimization of state-of-the-art language and vision models. The following features are supported, among others:
+### Choice of Simulator
+- **Design Implementation:** Developed in SystemVerilog.
+- **Simulation:**  
+  - **Verilator v5.020:** Converts SystemVerilog into a high-performance C++ simulation model.  
+  - **Cocotb v1.8.0:** A Python-based testbench framework that facilitates testing in a Python environment.
 
-- Efficient AI Optimization: 
-  MASE provides a set of composable tools for optimizing AI models. The tools are designed to be modular and can be used in a variety of ways to optimize models for different hardware targets. The tools can be used to optimize models for inference, training, or both. We support features such as the following:
+### MASE Automation
+- **Overview:**  
+  The things we have done to enable CNN automation are listed below:
+  
+- **Convolutional Layers:**
+  - Defined in the `INTERNAL_COMP` library using the `conv2d` operation.
+  - Module `convolution_mase.sv`,`data_in_reshaper.sv`, `weight_buffer.sv`, `striding.sv`,`striding_input_buffer.sv`,`padding_mase_array.sv`,`out_buffer.sv`,`data_in_reshaper.sv`,`conv_arith_mase_array.sv` are written by our team and added to MASE.
+  - The `add_hardware_metadata` pass extracts attributes such as `striding`, `padding`, and `bias` (set to `0` if not used) and converts them into SystemVerilog parameters(e.g., `STRIDE_TENSOR_SIZE_DIM_0_VALUE`, `PADDING_TENSOR_SIZE_DIM_1_VALUE`).
+  - The `emit_bram_transform` stage supports four-dimensional weights by adding parameters like `WEIGHT_TENSOR_SIZE_DIM_2` and `WEIGHT_TENSOR_SIZE_DIM_3`.
+  - Generates a top-level module (`top.sv`) that instantiates and correctly wires the convolution block.
+  
+- **Max Pooling Layers:**
+  - The PyTorch layer `nn.MaxPool2d` is recognized in the `add_common_metadata` pass.
+  - Mapped to the `max_pool2d` operation and integrated via the `INTERNAL_COMP` library.
+  - Automatically generates the necessary hardware metadata and SystemVerilog parameters.
 
-  - Quantization Search: mixed-precision quantization of any PyTorch model. We support microscaling and other numerical formats, at various granularities.
-  - Quantization-Aware Training (QAT): finetuning quantized models to minimize accuracy loss.
-  - And more!
+## CNN Architecture Overview
 
-- Hardware Generation: automatic generation of high-performance FPGA accelerators for arbitrary Pytorch models, through the Emit Verilog flow.
+The accelerator processes data through the following stages:
+1. **Reshaping:** Aligns input data with network requirements.
+2. **Padding:** Adds a one-pixel zero border around the input image.
+3. **Striding:** Extracts data patches corresponding to the convolution kernel.
+4. **Convolution Arithmetic:** Performs parallel dot-product multiplications.
+5. **Pooling:** Applies max pooling to the convolution outputs.
 
-- Distributed Deployment (Beta): Automatic parallelization of models across distributed GPU clusters, based on the Alpa algorithm.
+The overall architecture is illustrated below:
 
-For more details, refer to the Tutorials. If you enjoy using the framework, you can support us by starring the repository on GitHub!
+![Convolutional Layer Architecture](Images/CNN%20archtecture.png)
 
+## Padding Module (`padding_mase_array.sv`)
+- **Purpose:** Adds a one-pixel zero border around an input image.
+- **Operation:**  
+  - An internal state machine and two sets of counters manage the pixel flow.
+  - **Padding Counters:** (`x_padding_count`, `y_padding_count`) track the output coordinates, including padded zeros.
+  - **Original Data Counters:** (`x_original_count`, `y_original_count`) track the actual data coordinates.
+  - The state machine transitions through several states to output:
+    1. Top row zeros.
+    2. Valid pixel data with side zeros.
+    3. Bottom row zeros when the input frame ends.
+  
+- **Diagram:**  
+  ![Padding Counter Setup](Images/padding.png)
 
-## MASE Publications
+## Striding Module (`striding.sv`)
 
-* Fast Prototyping Next-Generation Accelerators for New ML Models using MASE: ML Accelerator System Exploration, [link](https://arxiv.org/abs/2307.15517)
-  ```
-  @article{cheng2023fast,
-  title={Fast prototyping next-generation accelerators for new ml models using mase: Ml accelerator system exploration},
-  author={Cheng, Jianyi and Zhang, Cheng and Yu, Zhewen and Montgomerie-Corcoran, Alex and Xiao, Can and Bouganis, Christos-Savvas and Zhao, Yiren},
-  journal={arXiv preprint arXiv:2307.15517},
-  year={2023}}
-  ```
-* MASE: An Efficient Representation for Software-Defined ML Hardware System Exploration, [link](https://openreview.net/forum?id=Z7v6mxNVdU)
-  ```
-  @article{zhangmase,
-  title={MASE: An Efficient Representation for Software-Defined ML Hardware System Exploration},
-  author={Zhang, Cheng and Cheng, Jianyi and Yu, Zhewen and Zhao, Yiren}}
-  ```
-### Repository structure
+### Module Architecture
+- **Function:** Implements a configurable sliding window over the padded input.
+- **Parameters:**  
+  - Matrix dimensions: `MATRIX_ROWS`, `MATRIX_COLS`
+  - Kernel dimensions: `KERNEL_ROWS`, `KERNEL_COLS`
+- **Data Flow:**  
+  - Data enters sequentially via a valid-ready handshake.
+  - Extracted windows follow a specific order (top-left, top-right, bottom-left, bottom-right) to match the expected output block structure (e.g., a `2 × 2` matrix).
 
-This repo contains the following directories:
-* `src/chop` - MASE's software stack
-* `src/mase_components` - Internal hardware library
-* `src/mase_cocotb` - Internal hardware testing flow
-* `src/mase_hls` - HLS component of MASE
-* `scripts` - Run and test scripts  
-* `test` - Unit testing 
-* `docs` - Documentation
-* `mlir-air` - MLIR AIR for ACAP devices
-* `setup.py` - Installation entry point
-* `Docker` - Docker container configurations
+### Data Processing & Pipeline
+- **FSM States:**
+  1. **CAPTURE:** Buffers input until a complete window is available.
+  2. **PROC_OUT:** Concurrently buffers new data and extracts windows.
+  3. **FLUSH_OUT:** Completes extraction once all input data has been received.
+  4. **DONE:** Indicates completion and waits for the next frame.
+- **Optimization:**  
+  Uses a 2D array (`frame_mem`) for buffering and leverages spatial locality to maximize data reuse and throughput.
 
-## MASE Dev Meetings
+## CNN Arithmetic Block (`conv_arith_mase_array.sv`)
+- **Role:** Core component performing multiply-accumulate (MAC) operations for convolution.
+- **Operation:**  
+  - Managed by a finite state machine (FSM) with three states:
+    - **IDLE:** Waits for valid weight and data inputs.
+    - **ACCUM:** Performs sequential MAC operations over the kernel window.
+    - **DONE:** Outputs the final result and awaits handshake from downstream logic.
+- **Efficiency:** Optimized for parallel computation across multiple output channels.
 
-* Direct [Google Meet link](meet.google.com/fke-zvii-tgv)
-* Join the [Mase Slack](https://join.slack.com/t/mase-tools/shared_invite/zt-2gl60pvur-pktLLLAsYEJTxvYFgffCog)
-* If you want to discuss anything in future meetings, please add them as comments in the [meeting agenda](https://docs.google.com/document/d/12m96h7gOhhmikniXIu44FJ0sZ2mSxg9SqyX-Uu3s-tc/edit?usp=sharing) so we can review and add them.
+## Getting Started
+1. **Install Prerequisites:**  
+   - [Verilator v5.020](https://www.veripool.org/wiki/verilator)  
+   - [Cocotb v1.8.0](https://cocotb.org/)
+2. **Run the code:** 
+   - Change the directory to the project's labs folder:
+    ```bash
+     cd docs/labs
+     ```
+   - run the python file `CNN.ipynb`
 
-## Donation  
+For further details, please refer to the documentation within the repository.
 
-If you think MASE is helpful, please [donate](https://www.buymeacoffee.com/mase_tools) for our work, we appreciate your support!
+---
 
-<img src='./docs/imgs/bmc_qr.png' width='250'>
+Contributions and feedback are welcome!
