@@ -82,7 +82,7 @@ Unlike traditional rigid pipelines with fixed latency, the Reshaper employs an e
 
 The module implements a configurable sliding window operation with parameters for matrix dimensions (`MATRIX_ROWS`, `MATRIX_COLS`) and kernel dimensions (`KERNEL_ROWS`, `KERNEL_COLS`).
 
-The input data arrive sequentially through a single-value port (`data_in`) using a valid-ready handshaking protocol, creating an effective input dimension of $(M + 2) \times (N + 2)$ where $M$ and $N$ represent the original matrix dimensions. The output consists of complete window arrays, with each window containing `KERNEL_ROWS` × `KERNEL_COLS` elements transmitted simultaneously. Unlike usual striding modules, the output is extracted in a different way, following this sequence within each group:
+The input data arrive sequentially through a single-value port (`data_in`) using a valid-git  handshaking protocol, creating an effective input dimension of $(M + 2) \times (N + 2)$ where $M$ and $N$ represent the original matrix dimensions. The output consists of complete window arrays, with each window containing `KERNEL_ROWS` × `KERNEL_COLS` elements transmitted simultaneously. Unlike usual striding modules, the output is extracted in a different way, following this sequence within each group:
 
 - Top-left (0,0) → Window 1  
 - Top-right (0,1) → Window 2  
@@ -184,6 +184,10 @@ After each cycle, `start_idx` is incremented by `PARALLEL`, ensuring continuous,
      cd docs/labs
      ```
    - run the python file `CNN.ipynb`
+3. **Result**
+   - You should be able to see the result like this one:
+   - ![alt text](<Images/result.png>)
+
 
 For further details, please refer to the documentation within the repository.
 
