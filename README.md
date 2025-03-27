@@ -183,9 +183,9 @@ After each cycle, `start_idx` is incremented by `PARALLEL`, ensuring continuous,
     ```bash
      cd docs/labs
      ```
-   - run the python file `CNN.ipynb` run the CNN model.
-   - run the python file `Pooling.ipynb` perform and verify the max pooling operation.
-   - To incorporate the max pooling step directly into the CNN flow, please uncomment the code 
+   - To test CNN model, please run the python file `CNN.ipynb`.
+   - To perform and verify the max pooling operation, please run the python file `Pooling.ipynb` 
+   - To incorporate the max pooling step directly into the CNN flow, please go back to `CNN.ipynb` and uncomment the code 
    ```
       x = self.pool(x)
    ``` 
