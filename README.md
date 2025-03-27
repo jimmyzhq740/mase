@@ -104,6 +104,49 @@ The overall architecture is illustrated below:
 
   ![alt text](<Images/Pooling Window.png>)
 
+## Weight Buffer
+
+The weight buffer is responsible for fetching and reordering weights stored in the ROM (populated via the `emit_parameters_in_dat_internal` pass) for use in output channel calculations. Key points include:
+
+- **Storage Organization:**  
+  - Each ROM address holds a batch of weights equal to `PARALLEL`, where:  
+    ```
+    PARALLEL = weight_parallelism_dim0 *
+               weight_parallelism_dim1 *
+               weight_parallelism_dim2 *
+               weight_parallelism_dim3
+    ```
+  
+- **Buffer Assembly:**  
+  - Weights are reorganized into `buffer_array_mul`, where each element contains a complete set of kernel weights for one output channel.
+  - The bit width of each element is determined by the fixed precision (`WEIGHT_PRECISION_0`) and the kernel size parameters (`WEIGHT_TENSOR_SIZE_DIM0` and `WEIGHT_TENSOR_SIZE_DIM1`).
+
+- **Weight Insertion Process:**  
+  - On every clock cycle when `weight_valid` is high, the module receives a batch of `PARALLEL` weights.
+  - A start index (`start_idx`) tracks the total weights loaded so far. For each weight in the batch, a global index is computed as:
+    ```
+    global_idx = start_idx + i   (for i = 0 to PARALLEL - 1)
+    ```
+  - If `global_idx` is within the overall weight count, the weight is assigned to a channel:
+    ```
+    channel = global_idx / K
+    offset_in_channel = global_idx % K
+    ```
+    where `K` is the number of weights per channel.
+  - A part-select operation then writes the weight into the correct bit range of the channel’s register. For example:
+    ```verilog
+    buffer_array_mul[WEIGHT_DIM_3-1-channel][MSB-:WEIGHT_PRECISION_0] <= weight_data[PARALLEL-1-i];
+    ```
+
+- **Example:**  
+  If there are 10 weights (with `K = 5` for two channels):
+  - Global indices 0–4 fill channel 0.
+  - Global indices 5–9 fill channel 1.
+  - With 4 weights per cycle, the first cycle writes indices 0–3 to channel 0; the second cycle completes channel 0 (index 4) and starts channel 1 (indices 5–7); the third cycle finishes channel 1 (indices 8–9).
+
+After each cycle, `start_idx` is incremented by `PARALLEL`, ensuring continuous, ordered loading of weights.
+
+
 
 ## Getting Started
 1. **Install Prerequisites:**  
