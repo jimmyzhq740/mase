@@ -73,7 +73,7 @@ async def test(dut):
         return value
 
     # Monitor DUT during execution
-    for cycle in range(1500):  # Observe for 50 cycles
+    for cycle in range(3000):  # Observe for 50 cycles
         await Timer(20, units="ns")  # Adjust timing based on design
         # tb._log.info(f"Cycle {{cycle+1}}:")
         # tb._log.info(f"  Layer1 Input: {{dut.conv1_data_in_0.value}}")
