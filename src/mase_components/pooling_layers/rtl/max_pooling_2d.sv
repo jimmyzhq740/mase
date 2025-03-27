@@ -20,8 +20,6 @@ module max_pooling_2d #(
     parameter DATA_IN_0_TENSOR_SIZE_DIM_1 = 1,
     parameter DATA_IN_0_TENSOR_SIZE_DIM_2 = 1,
     parameter DATA_IN_0_TENSOR_SIZE_DIM_3 = 1,
-    
-
    
     parameter DATA_OUT_0_PARALLELISM_DIM_0 = 2,
     parameter DATA_OUT_0_PARALLELISM_DIM_1 = 2,
@@ -32,7 +30,6 @@ module max_pooling_2d #(
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_1 = 1,
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_2 = 1,
     parameter DATA_OUT_0_TENSOR_SIZE_DIM_3 = 1
-    
 
     // FIFO related parameter (adjustable)
     

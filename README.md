@@ -91,6 +91,19 @@ The overall architecture is illustrated below:
     - **DONE:** Outputs the final result and awaits handshake from downstream logic.
 - **Efficiency:** Optimized for parallel computation across multiple output channels.
 
+## Pooling Module (`max_pooling_2d.sv`)
+- **Role:** Implements a 2D max pooling operation on input feature    maps. The module reads incoming data from a FIFO, organizes it into a row buffer, extracts fixed-size pooling windows (e.g., 2×2), computes the maximum value within each window, and outputs the pooled results. 
+- **FSM States:**
+  1. **IDLE**: Waits for valid input data from the FIFO.
+  2. **BUFFER**: Continuously fills the row buffer until enough rows are available.
+  3. **PROCESS**: Extracts pooling windows from the row buffer and computes maximum values.
+  4. **OUTPUT**: Drives the computed pooled values to the output when the output interface is ready.
+- **Pool window(`pool_window.sv`):** This submodule computes the maximum value within a given pooling window. The pool window module accepts an array of signed data values. It iterates through the values to determine and output the maximum, which is then used by the main pooling module for the final pooled output.
+- **Diagram:** 
+
+  ![alt text](<Images/Pooling Window.png>)
+
+
 ## Getting Started
 1. **Install Prerequisites:**  
    - [Verilator v5.020](https://www.veripool.org/wiki/verilator)  
