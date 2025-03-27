@@ -103,6 +103,8 @@ def get_input_nodes(fx_graph):
         if node.op == "placeholder":
             nodes_in = _get_next_call_node(node, nodes_in)
             node.meta["mase"].parameters["hardware"]["is_implicit"] = True
+        if node.meta["mase"]["common"]["mase_type"] =="implicit_func":
+            node.meta["mase"].parameters["hardware"]["is_implicit"] = True
     return nodes_in
 
 

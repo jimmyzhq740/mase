@@ -1,12 +1,14 @@
 module striding #(
     // 可变参数定义
-    parameter DATA_WIDTH  = 8,
-    parameter BATCH_SIZE  = 1,  // 此处 testbench 用单个 batch
+    parameter DATA_WIDTH = 8,
+    parameter BATCH_SIZE = 1,  // 此处 testbench 用单个 batch
     parameter MATRIX_ROWS = 8,  // padding前 row 数
     parameter MATRIX_COLS = 8,  // padding前 column 数
     parameter KERNEL_ROWS = 3,  // sliding window 行数
     parameter KERNEL_COLS = 3,  // sliding window 列数
-    parameter STRIDE      = 1   // 步长（本例未用到，因为输出顺序由分组控制）
+    parameter DATA_IN_0_PARALLELISM_DIM_0 = 4,
+    parameter DATA_IN_0_PARALLELISM_DIM_1 = 4,
+    parameter STRIDE = 1  // 步长（本例未用到，因为输出顺序由分组控制）
 ) (
     input logic clk,
     input logic rst,
@@ -33,8 +35,8 @@ module striding #(
 
 
   // 使用 ceil 除法：例如 VALID_ROWS=8时，ROW_GROUPS=4；若为奇数则最后一组只有1行
-  localparam integer ROW_GROUPS = (VALID_ROWS + 1) / 2;
-  localparam integer COL_GROUPS = (VALID_COLS + 1) / 2;
+  localparam integer ROW_GROUPS = (VALID_ROWS + DATA_IN_0_PARALLELISM_DIM_0-1) / DATA_IN_0_PARALLELISM_DIM_0;
+  localparam integer COL_GROUPS = (VALID_COLS + DATA_IN_0_PARALLELISM_DIM_1-1) / DATA_IN_0_PARALLELISM_DIM_1;
   // 总窗口数 = VALID_ROWS * VALID_COLS
   localparam integer TOTAL_WINDOWS = VALID_ROWS * VALID_COLS;
 
@@ -120,7 +122,7 @@ module striding #(
       // 初始化frame_mem（输入缓冲区）为0
       for (int r = 0; r < P_ROWS; r++) begin
         for (int c = 0; c < P_COLS; c++) begin
-          frame_mem[r][c] <= '0;
+          frame_mem[r][c] = '0;
         end
       end
     end else begin
@@ -162,7 +164,7 @@ module striding #(
             win_count <= win_count + 1;
 
             // 更新输出索引
-            if (sw < 3) begin
+            if (sw < DATA_IN_0_PARALLELISM_DIM_0 * DATA_IN_0_PARALLELISM_DIM_1 - 1) begin
               sw <= sw + 1;
             end else begin
               sw <= 0;
@@ -199,7 +201,7 @@ module striding #(
       // 在PROC_OUT或FLUSH_OUT状态下处理窗口输出
       if (state == PROC_OUT || state == FLUSH_OUT) begin
         // 当前行组的基准行
-        automatic int base_row = rg * 2;
+        automatic int base_row = rg * DATA_IN_0_PARALLELISM_DIM_0;  //assume same dim_0=dim_1
 
         // 只有当我们有足够的行数据时才输出窗口
         if (received_rows >= base_row + KERNEL_ROWS || state == FLUSH_OUT) begin
@@ -208,8 +210,8 @@ module striding #(
             int curr_row, curr_col;
 
             // 根据当前组及子索引 sw 计算窗口顶行与左列
-            curr_row = rg * 2 + ((sw < 2) ? 0 : 1);
-            curr_col = cg * 2 + ((sw % 2 == 0) ? 0 : 1);
+            curr_row = rg * DATA_IN_0_PARALLELISM_DIM_0 + (sw / DATA_IN_0_PARALLELISM_DIM_0);
+            curr_col = cg * DATA_IN_0_PARALLELISM_DIM_1 + (sw % DATA_IN_0_PARALLELISM_DIM_1);
 
             // 如果计算得到的位置超出范围，则输出窗口全0
             // 否则从frame_mem中提取窗口数据

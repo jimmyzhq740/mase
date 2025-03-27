@@ -199,6 +199,8 @@ module conv_arith_mase_array #(
     for (i = 0; i < DATA_OUT_0_PARALLELISM_DIM_2; i++) begin : parallel_blocks
       conv_arith_mase #(
           .DATA_IN_0_PRECISION_0(DATA_IN_0_PRECISION_0),
+          .DATA_IN_0_TENSOR_SIZE_DIM_0(DATA_IN_0_TENSOR_SIZE_DIM_0),
+          .DATA_IN_0_TENSOR_SIZE_DIM_1(DATA_IN_0_TENSOR_SIZE_DIM_1),
           .WEIGHT_PRECISION_0(WEIGHT_PRECISION_0),
           .WEIGHT_TENSOR_SIZE_DIM_0(WEIGHT_TENSOR_SIZE_DIM_0),
           .WEIGHT_TENSOR_SIZE_DIM_1(WEIGHT_TENSOR_SIZE_DIM_1),
@@ -227,8 +229,6 @@ module conv_arith_mase_array #(
           .in_data (debug_arith_data_out[DATA_OUT_0_PARALLELISM_DIM_2-i-1]),
           .out_data(fixed_rounding_out[DATA_OUT_0_PARALLELISM_DIM_2-i-1])
       );
-
-
     end
   endgenerate
 

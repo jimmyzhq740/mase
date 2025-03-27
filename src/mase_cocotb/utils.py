@@ -129,12 +129,14 @@ def fixed_preprocess_tensor(tensor: Tensor, q_config: dict, parallelism: list) -
     # This means we flatten into dimension that equals to teh batch size
 
     print ("tensor before tensor:",tensor)
+
     if len (tensor.shape) > 2:
-        print ('nihhhhhjhj')
         # flatten  batch and channel dimension
         tensor = tensor.view(-1,tensor.shape[-3] ,tensor.shape[-2], tensor.shape[-1])
     else:
         tensor = tensor.view((-1, tensor.shape[-1]))
+
+
     # tensor = tensor.view((-1, tensor.shape[-1]))
     print ("tensor after tensor:",tensor)
 

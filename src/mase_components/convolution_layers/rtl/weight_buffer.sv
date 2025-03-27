@@ -115,8 +115,6 @@ module weight_buffer #(
       end
     end
   end
-
-
-
 endmodule
+
 
