@@ -8,8 +8,8 @@ This repository contains a CNN accelerator implemented in SystemVerilog with an 
 - [Padding Module](#padding-module)
 - [Striding Module](#striding-module)
 - [CNN Arithmetic Block](#cnn-arithmetic-block)
-- [Simulation Results](#simulation-results)
 - [Getting Started](#getting-started)
+- [Simulation Results](#simulation-results)
 
 ## Proposed Hardware Methodology
 
@@ -185,8 +185,17 @@ After each cycle, `start_idx` is incremented by `PARALLEL`, ensuring continuous,
      ```
    - run the python file `CNN.ipynb` run the CNN model.
    - run the python file `Pooling.ipynb` perform and verify the max pooling operation.
-   - To incorporate the max pooling step directly into the CNN flow, uncomment the relevant max pooling sections in `CNN.ipynb`.
+   - To incorporate the max pooling step directly into the CNN flow, please uncomment the code 
+   ```
+      x = self.pool(x)
+   ``` 
+   in `CNN.ipynb`, and rerun the python file.
    - *Important*: Before running the Cocotb testbench, ensure the `parameter DATA_IN_0_PARALLELISM_DIM_2` is set to 1 in the hardware code. This change aligns the input feature map dimensions with the convolution layer’s output.
+
+## Simulation Results
+  - If you see output similiar to this:
+  - ![alt text](<Images/result.png>)
+  - Congradualation! you successfully run the code!
    
 For further details, please refer to the documentation within the repository.
 
