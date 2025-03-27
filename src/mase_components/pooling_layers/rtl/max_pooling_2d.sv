@@ -51,12 +51,10 @@ module max_pooling_2d #(
     input logic data_out_0_ready
 );
 
-  // Set data width (e.g. 8 bits)
   localparam DATA_WIDTH = DATA_IN_0_PRECISION_0;
   localparam HEIGHT = DATA_IN_0_PARALLELISM_DIM_0 * DATA_IN_0_PARALLELISM_DIM_1 * DATA_IN_0_PARALLELISM_DIM_2;
   localparam WIDTH  = HEIGHT;
 
-  // For a 8x8 input and 2x2 pooling, but first acc 4 row to process
   localparam NUM_WINDOWS = HEIGHT; 
   localparam FIFO_DEPTH = 16;
 
@@ -113,8 +111,6 @@ module max_pooling_2d #(
   logic signed [DATA_WIDTH-1:0] row_buffer[0:WINDOW_ROWS-1][0:WIDTH-1];
   logic [$clog2(WINDOW_ROWS+1)-1:0] row_count;
 
-  // =========================================================
-  // 3) Define 4 pooling windows (each 2x2) with 4 elements each
   // Both window_regs and window_max are declared as signed
   logic signed [DATA_WIDTH-1:0] window_regs[0:NUM_WINDOWS-1][0:POOL_SIZE*POOL_SIZE-1];
   logic signed [DATA_WIDTH-1:0] window_max[0:NUM_WINDOWS-1];

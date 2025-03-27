@@ -120,7 +120,7 @@ module striding #(
       // 初始化frame_mem（输入缓冲区）为0
       for (int r = 0; r < P_ROWS; r++) begin
         for (int c = 0; c < P_COLS; c++) begin
-          frame_mem[r][c] <= '0;
+          frame_mem[r][c] = '0;
         end
       end
     end else begin

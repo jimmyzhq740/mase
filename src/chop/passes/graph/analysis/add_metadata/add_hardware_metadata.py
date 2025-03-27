@@ -493,6 +493,7 @@ def add_hardware_metadata_analysis_pass(graph, pass_args={}):
     for node in graph.nodes:
         node.meta["mase"]["hardware"]["max_parallelism"] = pass_args.get(
             "max_parallelism", [2] * 4
+            # "max_parallelism", [1, 2, 8, 8]
         )
 
     # Add hardware parameters

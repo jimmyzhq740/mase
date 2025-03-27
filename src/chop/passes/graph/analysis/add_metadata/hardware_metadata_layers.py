@@ -327,4 +327,13 @@ INTERNAL_COMP = {
             ],
         }
     ],
+
+    "flatten":[
+        {
+            "name": "flatten",
+            "dependence_files": [
+                "pooling_layers/rtl/flatten.sv",
+            ],
+        }
+    ],
 }
