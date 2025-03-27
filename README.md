@@ -183,12 +183,11 @@ After each cycle, `start_idx` is incremented by `PARALLEL`, ensuring continuous,
     ```bash
      cd docs/labs
      ```
-   - run the python file `CNN.ipynb`
-3. **Result**
-   - You should be able to see the result like this one:
-   - ![alt text](<Images/result.png>)
-
-
+   - run the python file `CNN.ipynb` run the CNN model.
+   - run the python file `Pooling.ipynb` perform and verify the max pooling operation.
+   - To incorporate the max pooling step directly into the CNN flow, uncomment the relevant max pooling sections in `CNN.ipynb`.
+   - *Important*: Before running the Cocotb testbench, ensure the `parameter DATA_IN_0_PARALLELISM_DIM_2` is set to 1 in the hardware code. This change aligns the input feature map dimensions with the convolution layer’s output.
+   
 For further details, please refer to the documentation within the repository.
 
 ---
